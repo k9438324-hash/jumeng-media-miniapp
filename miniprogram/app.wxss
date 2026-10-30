@@ -20,4 +20,3 @@ button.primary[disabled] { background:var(--select);color:var(--ink-3); }
 .skeleton.short { width:55%; }
 
 .brand-heading { display:flex;align-items:center;min-height:88rpx;margin-bottom:24rpx; }
-.brand-heading .teacher-entry,.ai-heading .teacher-entry { width:auto;margin:0 0 0 auto;padding:12rpx 0 12rpx 24rpx;color:var(--ink-2);font-size:26rpx;min-height:88rpx;white-space:nowrap; }

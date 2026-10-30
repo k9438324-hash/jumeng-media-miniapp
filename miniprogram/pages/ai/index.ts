@@ -7,7 +7,7 @@ type RetryAction = 'init' | 'send' | 'poll' | 'history' | 'stop' | 'load';
 interface PendingSend { conversationId: string; requestId: string; content: string }
 Page({
   data: {
-    menuItems: [{ label: '新对话', action: 'new', guarded: true }, { label: '历史对话', action: 'history', guarded: true }],
+    menuItems: [{ label: '新对话', action: 'new', guarded: true }, { label: '历史对话', action: 'history', guarded: true }, { label: '老师后台', action: 'teacher', guarded: true }],
     modeLabel: '正在连接服务端', input: '', conversation: null as Conversation | null,
     contextLabel: '', busy: false, connecting: false, partial: '', status: '',
     error: '', historyOpen: false, history: [] as Pick<Conversation, 'id' | 'title' | 'updatedAt'>[],
@@ -29,6 +29,7 @@ Page({
   loadId: '',
   openTeacher() { if (this.data.busy || this.data.connecting) return; wx.navigateTo({ url: '/pages/teacher/index' }); },
   menuCommand(e: WechatMiniprogram.CustomEvent<{ action: string }>) {
+    if (e.detail.action === 'teacher') { this.openTeacher(); return; }
     if (e.detail.action === 'new') void this.newConversation();
     if (e.detail.action === 'history') void this.showHistory();
   },

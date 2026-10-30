@@ -10,10 +10,11 @@ function time(value: number) {
 }
 Page({
   data: {
-    menuItems: [{ label: '登录 / 刷新会员状态', action: 'refresh', guarded: true }], account: null as Account | null, loading: false, error: '', modeLabel: '', statusLabel: '', expiresLabel: '', records: [] as { id: string; time: string; status: string; mode: string; charged: number }[] },
+    menuItems: [{ label: '登录 / 刷新会员状态', action: 'refresh', guarded: true }, { label: '老师后台', action: 'teacher', guarded: true }], account: null as Account | null, loading: false, error: '', modeLabel: '', statusLabel: '', expiresLabel: '', records: [] as { id: string; time: string; status: string; mode: string; charged: number }[] },
   visible: false,
   openTeacher() { if (this.data.loading) return; wx.navigateTo({ url: '/pages/teacher/index' }); },
   menuCommand(e: WechatMiniprogram.CustomEvent<{ action: string }>) {
+    if (e.detail.action === 'teacher') { this.openTeacher(); return; }
     if (e.detail.action === 'refresh') void this.refresh();
   },
   onShow() {

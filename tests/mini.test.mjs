@@ -169,11 +169,12 @@ test('小程序刷新服务器课程后可直接打开新发布案例',async()=>
 });
 
 
-test('三个顶部按钮进入老师后台，密码失败不进入，成功清除密码且退出清除权限',async()=>{
+test('三个 Logo 菜单进入老师后台，密码失败不进入，成功清除密码且退出清除权限',async()=>{
  for(const name of ['sop','ai','account']){
   const h=harness('miniprogram/pages/'+name+'/index.js',{navigateTo:o=>h.events.push(['navigateTo',o.url])});
-  assert.match(readFileSync('miniprogram/pages/'+name+'/index.wxml','utf8'),/bindtap="openTeacher"/);
-  h.page.openTeacher();assert.equal(h.events.at(-1)[1],'/pages/teacher/index');
+  assert.doesNotMatch(readFileSync('miniprogram/pages/'+name+'/index.wxml','utf8'),/teacher-entry/);
+  assert.ok(h.page.data.menuItems.some(m=>m.action==='teacher'));
+  h.page.menuCommand({detail:{action:'teacher'}});assert.equal(h.events.at(-1)[1],'/pages/teacher/index');
  }
  let accepted=false,logout=0;
  const h=harness('miniprogram/pages/teacher/index.js',{request:o=>{

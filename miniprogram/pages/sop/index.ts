@@ -35,7 +35,7 @@ function toCases(lessonIds: number[]): CaseItem[] {
 
 Page({
   data: {
-    menuItems: [{ label: '返回目录', action: 'catalog' }, { label: '刷新课程', action: 'refresh' }, { label: '隐私说明', action: 'privacy' }],
+    menuItems: [{ label: '返回目录', action: 'catalog' }, { label: '刷新课程', action: 'refresh' }, { label: '隐私说明', action: 'privacy' }, { label: '老师后台', action: 'teacher', guarded: true }],
     courseNotice: '',
     categories: source.categories.slice().sort((a,b) => categoryOrder.indexOf(a.id) - categoryOrder.indexOf(b.id)).map(c => ({ ...c, name: categoryLabels[c.id] || c.name })),
     categoryId: source.categories[0].id,
@@ -53,6 +53,7 @@ Page({
   courseEpoch: 0,
   openTeacher() { wx.navigateTo({ url: '/pages/teacher/index' }); },
   menuCommand(e: WechatMiniprogram.CustomEvent<{ action: string }>) {
+    if (e.detail.action === 'teacher') { this.openTeacher(); return; }
     if (e.detail.action === 'catalog') this.back();
     if (e.detail.action === 'privacy') this.showPrivacy();
     if (e.detail.action === 'refresh') void this.loadCourse();
