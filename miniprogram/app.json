@@ -1,0 +1,13 @@
+{
+  "pages": ["pages/sop/index", "pages/ai/index"],
+  "window": { "navigationBarTitleText": "聚梦传媒", "navigationBarBackgroundColor": "#ffffff", "navigationBarTextStyle": "black" },
+  "tabBar": {
+    "color": "#777777", "selectedColor": "#222222", "backgroundColor": "#ffffff",
+    "list": [
+      { "pagePath": "pages/sop/index", "text": "对标 SOP" },
+      { "pagePath": "pages/ai/index", "text": "聚梦AI" }
+    ]
+  },
+  "style": "v2", "sitemapLocation": "sitemap.json",
+  "networkTimeout": { "request": 15000 }
+}

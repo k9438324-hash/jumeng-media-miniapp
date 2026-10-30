@@ -1,0 +1,36 @@
+<view class="page ai-page">
+  <view class="title">聚梦AI</view>
+  <view class="notice">{{modeLabel}}</view>
+  <view class="row">
+    <button size="mini" bindtap="newConversation" disabled="{{busy || connecting}}">新建对话</button>
+    <button size="mini" bindtap="showHistory" disabled="{{busy || connecting}}">查看历史</button>
+  </view>
+  <view wx:if="{{contextLabel}}" class="card">已带入：{{contextLabel}}<view class="muted">请在下方补充空间、参与人员和现场限制，再发送。</view></view>
+  <view wx:if="{{historyOpen}}" class="card">
+    <view class="row"><text class="subtitle">历史对话</text><button size="mini" bindtap="closeHistory">收起</button></view>
+    <view wx:if="{{!history.length}}" class="muted">暂无历史</view>
+    <button wx:for="{{history}}" wx:key="id" data-id="{{item.id}}" bindtap="selectHistory">{{item.title}}</button>
+  </view>
+  <view class="messages">
+    <view wx:if="{{conversation &amp;&amp; !conversation.messages.length}}" class="muted">告诉我你的现场情况，我会帮你调整拍法。</view>
+    <view wx:for="{{conversation.messages}}" wx:key="index" class="card message {{item.role}}">
+      <view class="label">{{item.role === 'user' ? '你' : '聚梦AI'}}</view>
+      <text selectable class="message-text">{{item.content}}</text>
+      <button wx:if="{{item.role === 'assistant'}}" size="mini" data-index="{{index}}" bindtap="copy">复制结果</button>
+    </view>
+    <view wx:if="{{partial}}" class="card message assistant">
+      <text selectable class="message-text">{{partial}}</text>
+      <button size="mini" data-partial="{{true}}" bindtap="copy">复制当前结果</button>
+    </view>
+    <view class="muted" aria-live="polite">{{status}}</view>
+  </view>
+  <view wx:if="{{error}}" class="notice" role="alert">{{error}}<button size="mini" bindtap="retry">失败重试</button></view>
+  <view class="composer">
+    <view class="examples"><button wx:for="{{examples}}" wx:key="*this" size="mini" data-text="{{item}}" bindtap="example" disabled="{{busy}}">{{item}}</button></view>
+    <textarea value="{{input}}" bindinput="input" maxlength="4000" auto-height placeholder="补充现场情况，或直接提问（最多4000字）" disabled="{{busy || connecting}}" adjust-position="{{true}}" />
+    <view class="row">
+      <button bindtap="send" disabled="{{busy || connecting || !input || !conversation}}">发送</button>
+      <button wx:if="{{busy}}" bindtap="stop">停止生成</button>
+    </view>
+  </view>
+</view>

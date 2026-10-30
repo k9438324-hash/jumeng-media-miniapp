@@ -1,0 +1,9 @@
+{
+  "appid": "wx0d79451e6dd4b6b9",
+  "projectname": "聚梦传媒",
+  "compileType": "miniprogram",
+  "miniprogramRoot": "miniprogram/",
+  "libVersion": "3.7.0",
+  "setting": { "es6": true, "minified": true, "urlCheck": true },
+  "packOptions": { "ignore": [{ "type": "suffix", "value": ".ts" }] }
+}

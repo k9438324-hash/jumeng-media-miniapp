@@ -1,0 +1,58 @@
+{
+  "checkedAt": "2026-10-30T02:09:38.729Z",
+  "root": "D:\\4.3杨磊\\垒\\output\\pdf\\厨房视频照拍手册",
+  "mediaReferences": 162,
+  "missing": [],
+  "hashes": [
+    {
+      "file": "videos/13437715451966486.mp4",
+      "actual": "cbe11f3abd37b34d8b9a6bea16e48ee2897bdbc1eacaa33ed4e990b717dea5a1",
+      "recordedMatch": true,
+      "originalMatch": true
+    },
+    {
+      "file": "videos/13437715659752140.mp4",
+      "actual": "d8003c591a7dc94d52f436b3f3539bad381d642e0dcd108039942cf00f4ab9fe",
+      "recordedMatch": true,
+      "originalMatch": true
+    },
+    {
+      "file": "videos/13437715738423785.mp4",
+      "actual": "c0d60a50790df44cc96aeb5bc6cac97689d0ec70886c2cddc2ef9a8af4114f5c",
+      "recordedMatch": true,
+      "originalMatch": true
+    },
+    {
+      "file": "videos/13437715797087639.mp4",
+      "actual": "f4a5362763ffc729bc2fc3a462ca9880668b0aef81e291497d8d5e888449aaba",
+      "recordedMatch": true,
+      "originalMatch": true
+    },
+    {
+      "file": "videos/13437715874423385.mp4",
+      "actual": "6201b3e5e5cd2882a4d6e038989fe7d186a889cd7d306062a7b2d0f47254c55e",
+      "recordedMatch": true,
+      "originalMatch": true
+    },
+    {
+      "file": "videos/13437715904839366.mp4",
+      "actual": "735ae8df6dd977fa94da4251af18378ffd70e2ef269f9a3c0521597b8375b0ff",
+      "recordedMatch": true,
+      "originalMatch": true
+    },
+    {
+      "file": "videos/13437715930435285.mp4",
+      "actual": "14f7eb4cc8f60daaf9876c01bbf50a2045490f67043e69955aecf19fe20543ed",
+      "recordedMatch": true,
+      "originalMatch": true
+    },
+    {
+      "file": "videos/13437727876812319.mp4",
+      "actual": "cc5484bae15a467b5f03e079b5348d244e038435c491b5a7e7ba505189c8d9ed",
+      "recordedMatch": true,
+      "originalMatch": null
+    }
+  ],
+  "originalFilesModified": false,
+  "uploaded": false
+}

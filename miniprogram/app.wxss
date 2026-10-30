@@ -1,0 +1,12 @@
+/* Claude 视觉入口：全局 token 与布局基类；不绑定业务字段。 */
+page { --surface: #fff; --background: #f6f6f6; --text: #222; --muted: #666; --line: #ddd; --accent: #333; --radius: 12rpx; background: var(--background); color: var(--text); font-size: 28rpx; line-height: 1.65; }
+.page { padding: 28rpx; padding-bottom: calc(36rpx + env(safe-area-inset-bottom)); }
+.title { font-size: 38rpx; font-weight: 600; margin: 18rpx 0; }
+.subtitle { font-size: 31rpx; font-weight: 600; margin: 12rpx 0; }
+.muted { color: var(--muted); font-size: 24rpx; margin: 12rpx 0; }
+.card { background: var(--surface); border: 1rpx solid var(--line); border-radius: var(--radius); padding: 24rpx; margin: 20rpx 0; }
+.notice { background: #fff4de; padding: 16rpx; margin: 16rpx 0; word-break: break-all; }
+.row { display: flex; flex-wrap: wrap; align-items: center; gap: 12rpx; margin: 16rpx 0; }
+.row button { margin: 0; }
+button { border-radius: var(--radius); font-size: 28rpx; }
+button.selected { background: var(--accent); color: white; }

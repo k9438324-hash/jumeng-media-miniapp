@@ -1,0 +1,14 @@
+{
+  "source": "D:\\4.3杨磊\\垒\\output\\pdf\\源文件\\厨房视频照拍手册\\手机课程.json",
+  "sha256": "e279eeed36fd3f3d08941f8efe63dd862290dbd89efd419a1088e86e6e6512c4",
+  "categories": 5,
+  "lessons": 9,
+  "shots": 54,
+  "uniqueVideos": 8,
+  "reusedVideo": "案例 1 与案例 8 共用完整视频；镜头脚本不同。",
+  "omitted": [
+    "source (本地原片绝对路径)",
+    "segments (非照拍镜头)",
+    "sha256 (留在来源报告)"
+  ]
+}

@@ -1,0 +1,45 @@
+<view class="page">
+  <view wx:if="{{!lesson}}">
+    <view class="title">对标 SOP</view>
+    <view class="muted">选择现场类型，按镜头照拍</view>
+    <view class="categories">
+      <button wx:for="{{categories}}" wx:key="id" size="mini" class="{{categoryId === item.id ? 'selected' : ''}}" data-id="{{item.id}}" bindtap="selectCategory">{{item.name}}</button>
+    </view>
+    <view wx:for="{{cases}}" wx:key="id" class="card" data-id="{{item.id}}" bindtap="openCase">
+      <view class="subtitle">{{item.name}}</view>
+      <view>{{item.task}}</view>
+      <view class="muted">{{item.shots.length}} 镜 · 点击进入 / 继续阅读</view>
+    </view>
+  </view>
+  <view wx:else>
+    <button size="mini" bindtap="back">返回目录</button>
+    <view class="title">{{lesson.name}}</view>
+    <view class="muted">{{lesson.need}}</view>
+    <view class="row">
+      <button size="mini" bindtap="toggleFull">{{full ? '返回当前参考片段' : '观看完整原片'}}</button>
+      <text>{{full ? '完整原片' : '当前镜头参考片段'}}</text>
+    </view>
+    <video wx:if="{{videoSrc}}" id="reference" class="reference-video" src="{{videoSrc}}" poster="{{poster}}" initial-time="{{initialTime}}" object-fit="contain" autoplay="{{false}}" controls bindtimeupdate="timeUpdate" binderror="videoError" />
+    <view wx:else class="notice">媒体未配置：请配置 mediaBase。下方 SOP 可正常阅读。</view>
+    <view wx:if="{{mediaError}}" class="notice">{{mediaError}}</view>
+    <view class="row">
+      <button size="mini" bindtap="previous" disabled="{{shotIndex === 0}}">上一镜</button>
+      <button size="mini" bindtap="replay" disabled="{{!videoSrc}}">重播 / 重试</button>
+      <button size="mini" bindtap="next" disabled="{{shotIndex === lesson.shots.length - 1}}">下一镜</button>
+    </view>
+    <view class="subtitle">第 {{shotIndex + 1}} / {{lesson.shots.length}} 镜 · {{shot.title}}</view>
+    <view class="card instructions">
+      <view><text class="label">站在哪里</text>{{shot.where}}</view>
+      <view><text class="label">手机对准哪里</text>{{shot.frame}}</view>
+      <view><text class="label">开始后做什么</text>{{shot.action}}</view>
+      <view><text class="label">IP说什么或问什么</text>{{shot.say}}</view>
+      <view><text class="label">什么时候停止</text>{{shot.stop}}</view>
+      <view><text class="label">拍够的标准</text>{{shot.check}}</view>
+    </view>
+    <button bindtap="bringToAI">带入聚梦AI，按现场调整拍法</button>
+    <view class="muted">已自动保存当前镜头和播放位置</view>
+    <view class="shot-list">
+      <button wx:for="{{lesson.shots}}" wx:key="title" size="mini" data-index="{{index}}" class="{{shotIndex === index ? 'selected' : ''}}" bindtap="selectShot">{{index + 1}}. {{item.title}}</button>
+    </view>
+  </view>
+</view>

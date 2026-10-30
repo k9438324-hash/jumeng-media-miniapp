@@ -1,0 +1,8 @@
+.message-text { white-space: pre-wrap; word-break: break-word; display: block; }
+.message.user { border-left: 6rpx solid var(--accent); }
+.message .label { font-weight: 600; margin-bottom: 12rpx; }
+.message button { margin: 16rpx 0 0; }
+.composer { background: var(--background); padding: 18rpx 0; }
+.composer textarea { width: 100%; box-sizing: border-box; min-height: 130rpx; padding: 18rpx; background: var(--surface); border: 1rpx solid var(--line); border-radius: var(--radius); }
+.examples { display: flex; flex-wrap: wrap; gap: 10rpx; margin-bottom: 16rpx; }
+.examples button { margin: 0; text-align: left; font-size: 24rpx; }

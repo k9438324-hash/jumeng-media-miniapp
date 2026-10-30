@@ -1,0 +1,15 @@
+node_modules/
+dist/
+miniprogram/**/*.js
+server/.env
+server/data/
+*.sqlite*
+project.private.config.json
+config/media.local.json
+test-results/
+delivery/
+.pdf-read-temp/
+.env
+.env.*
+!.env.example
+*.log
