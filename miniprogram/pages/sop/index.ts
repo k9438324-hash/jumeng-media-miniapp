@@ -1,4 +1,4 @@
-import source from '../../data/course.json';
+import source from '../../data/course';
 import { Lesson, Shot, boundedIndex, mediaUrl, normalizeProgress } from '../../domain';
 import { config } from '../../config';
 const lessons = source.lessons as Lesson[];

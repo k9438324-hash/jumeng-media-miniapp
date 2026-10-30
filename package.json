@@ -3,21 +3,25 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "engines": { "node": ">=24.16.0" },
+  "engines": {
+    "node": ">=24.16.0"
+  },
   "scripts": {
     "setup": "node scripts/setup-dev.mjs",
-    "build": "tsc -p tsconfig.mini.json && tsc -p tsconfig.server.json",
+    "build": "node scripts/build-course.mjs && tsc -p tsconfig.mini.json && tsc -p tsconfig.server.json",
     "dev": "node --env-file-if-exists=server/.env dist/server/index.js",
     "test": "npm run build && node --test tests/*.test.mjs",
     "import:course": "node scripts/import-course.mjs",
     "verify:media": "node scripts/verify-media.mjs",
     "verify:native": "node scripts/verify-native.mjs",
+    "test:devtools": "node scripts/devtools-smoke.mjs",
     "smoke": "npm run build && node scripts/smoke-entry.mjs",
     "watch:mini": "tsc -p tsconfig.mini.json --watch"
   },
   "devDependencies": {
     "@types/node": "^24.0.0",
     "miniprogram-api-typings": "^5.0.0",
+    "miniprogram-automator": "^0.13.0",
     "typescript": "^5.9.0"
   }
 }

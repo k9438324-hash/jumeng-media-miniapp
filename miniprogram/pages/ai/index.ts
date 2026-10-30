@@ -1,7 +1,7 @@
 import { api, sessionLabel, ApiError } from '../../services/api';
 import { config } from '../../config';
 import { Context, Conversation, Job } from '../../domain';
-import course from '../../data/course.json';
+import course from '../../data/course';
 const prefix = 'jumeng:chat:' + config.authMode + ':' + config.apiBase + ':';
 type RetryAction = 'init' | 'send' | 'poll' | 'history' | 'stop' | 'load';
 interface PendingSend { conversationId: string; requestId: string; content: string }

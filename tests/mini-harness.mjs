@@ -13,7 +13,7 @@ export function harness(entry, additionalWx={}){
   const cache=new Map();
   function load(path){
     path=resolve(path);if(cache.has(path))return cache.get(path);
-    if(path.endsWith('.json'))return JSON.parse(readFileSync(path,'utf8'));
+    if(path.endsWith('.json'))throw new Error('微信运行时不能直接require课程JSON；请先构建JS数据模块');
     const module={exports:{}};cache.set(path,module.exports);
     const context=vm.createContext({wx,Page:options=>{page=options;},App:()=>{},console,setTimeout,clearTimeout,Date,Math,Error,Promise});
     const fn=vm.runInContext('(function(require,module,exports){'+readFileSync(path,'utf8')+'\n})',context,{filename:path});

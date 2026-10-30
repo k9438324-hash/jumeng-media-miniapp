@@ -1,0 +1,17 @@
+{
+  "at": "2026-10-30T06:10:22.267Z",
+  "environment": "WeChat developer tools simulator",
+  "ai": "mock",
+  "realDeepSeek": false,
+  "phone": false,
+  "checks": [
+    "五类真实原生目录及案例列表",
+    "原生分镜前后切换与完整视频入口",
+    "本机原片分镜在模拟器实际播放",
+    "切AI后原视频播放时间停止推进",
+    "SOP上下文带入AI并完成本机服务认证",
+    "原生输入和服务端模拟聊天返回",
+    "页面内历史入口",
+    "切回SOP保留当前镜头"
+  ]
+}

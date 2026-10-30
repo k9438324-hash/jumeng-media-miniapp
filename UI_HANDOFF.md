@@ -44,6 +44,8 @@ SOP本地存储：`jumeng:category`、`jumeng:progress:{lessonId}`（`shotIndex,
 
 来源清洗后的完整数据在 `miniprogram/data/course.json`。索引从0开始，时间单位秒，媒体均为相对键。
 
+原生运行约束：页面import使用 `../../data/course`，构建会把JSON生成TS再编译成JS。不能把页面改回直接import/require course.json，否则微信运行时会出现找不到module并显示空白页；Node测试能读JSON不代表小程序能读。
+
 ```json
 {
   "categories": [{"id":"measure","name":"量房","desc":"问需求、量尺寸、说改法","lessonIds":[1],"primary":1}],

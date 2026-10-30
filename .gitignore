@@ -1,6 +1,7 @@
 node_modules/
 dist/
 miniprogram/**/*.js
+miniprogram/data/course.ts
 server/.env
 server/data/
 *.sqlite*
