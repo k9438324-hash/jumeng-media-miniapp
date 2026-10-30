@@ -27,6 +27,7 @@ Page({
   jobId: '',
   action: 'init' as RetryAction,
   loadId: '',
+  openTeacher() { if (this.data.busy || this.data.connecting) return; wx.navigateTo({ url: '/pages/teacher/index' }); },
   menuCommand(e: WechatMiniprogram.CustomEvent<{ action: string }>) {
     if (e.detail.action === 'new') void this.newConversation();
     if (e.detail.action === 'history') void this.showHistory();

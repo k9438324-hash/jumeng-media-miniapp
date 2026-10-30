@@ -29,7 +29,7 @@
 .case-read { font-size:24rpx;color:var(--ink-2); }
 .case-side { flex-shrink:0;display:flex;align-items:center; }
 .case-arrow { display:block;width:16rpx;height:16rpx;border-right:2rpx solid var(--ink-3);border-top:2rpx solid var(--ink-3);transform:rotate(45deg); }
-.case-continue { width:128rpx;white-space:nowrap;background:var(--ink);color:var(--bg);font-size:24rpx;font-weight:500;min-height:88rpx;height:88rpx;padding:0 24rpx;border-radius:var(--radius-pill); }
+.sop-page .case-continue { width:128rpx;white-space:nowrap;background:var(--ink);color:var(--bg);font-size:24rpx;font-weight:500;min-height:88rpx;height:88rpx;padding:0 24rpx;border-radius:var(--radius-pill); }
 .case-continue::after { border:0; }
 
 .footer-links { padding:40rpx 0 8rpx;display:flex;justify-content:center; }

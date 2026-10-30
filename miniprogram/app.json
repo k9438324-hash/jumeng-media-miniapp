@@ -2,7 +2,8 @@
   "pages": [
     "pages/sop/index",
     "pages/ai/index",
-    "pages/account/index"
+    "pages/account/index",
+    "pages/teacher/index"
   ],
   "window": {
     "navigationBarTitleText": "",

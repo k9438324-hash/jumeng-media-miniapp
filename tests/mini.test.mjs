@@ -8,7 +8,7 @@ const tap=(key,value)=>({currentTarget:{dataset:{[key]:value}}});
 test('三个底部导航与五类真实案例，54镜必需字段齐全',()=>{
   const app=JSON.parse(readFileSync('miniprogram/app.json'));
   assert.deepEqual(app.tabBar.list.map(x=>x.text),['对标 SOP','聚梦AI','会员']);
-  assert.equal(app.pages.length,3);assert.equal(app.pages[0],'pages/sop/index');
+  assert.equal(app.pages.length,4);assert.ok(app.pages.includes('pages/teacher/index'));assert.equal(app.pages[0],'pages/sop/index');
   assert.equal(app.pages[2],'pages/account/index');
   const h=harness('miniprogram/pages/sop/index.js');h.page.onLoad();
   assert.deepEqual(h.page.data.categories.map(c=>c.name),['量房','开工','案例','谈单','巡检']);
@@ -166,4 +166,31 @@ test('小程序刷新服务器课程后可直接打开新发布案例',async()=>
   }});
   h.page.onLoad();await h.page.loadCourse();assert.equal(h.page.data.visibleCases[0].id,98765);
   h.page.openCase(tap('id',98765));assert.equal(h.page.data.lesson.name,'服务器新发布案例');assert.equal(h.page.data.shot.title,added.shots[0].title);
+});
+
+
+test('三个顶部按钮进入老师后台，密码失败不进入，成功清除密码且退出清除权限',async()=>{
+ for(const name of ['sop','ai','account']){
+  const h=harness('miniprogram/pages/'+name+'/index.js',{navigateTo:o=>h.events.push(['navigateTo',o.url])});
+  assert.match(readFileSync('miniprogram/pages/'+name+'/index.wxml','utf8'),/bindtap="openTeacher"/);
+  h.page.openTeacher();assert.equal(h.events.at(-1)[1],'/pages/teacher/index');
+ }
+ let accepted=false,logout=0;
+ const h=harness('miniprogram/pages/teacher/index.js',{request:o=>{
+  const path=new URL(o.url).pathname;let statusCode=200,data;
+  if(path==='/auth/login')data={token:'user-session',expiresAt:Date.now()+86400000,authMode:'mock',aiMode:'mock'};
+  else if(path==='/teacher/login'){
+   if(!accepted){statusCode=403;data={error:'密码不正确'};}
+   else data={teacherToken:'teacher-session',expiresAt:Date.now()+1800000};
+  }else{
+   assert.equal(o.header['X-Teacher-Token'],'teacher-session');assert.equal(o.header.Authorization,'Bearer user-session');
+   if(path==='/teacher/logout'){logout++;data={ok:true};}
+   else data={items:[],authMode:'mock'};
+  }
+  o.success({statusCode,data});
+ }});
+ const p=h.page;p.data.password='test-password';await p.unlock();assert.equal(p.data.locked,true);assert.match(p.data.error,/密码/);
+ accepted=true;await p.unlock();assert.equal(p.data.locked,false);assert.equal(p.data.password,'');assert.equal(p.teacherToken,'teacher-session');
+ assert.ok(![...h.storage.values()].includes('teacher-session'));
+ await p.logout();assert.equal(logout,1);assert.equal(p.data.locked,true);assert.equal(p.teacherToken,'');
 });

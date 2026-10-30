@@ -1,0 +1,62 @@
+<view class="page teacher-page">
+ <view class="teacher-heading"><image class="teacher-logo" src="/assets/jumeng-avatar.png" mode="aspectFit" /><button wx:if="{{!locked}}" class="text-button" bindtap="logout" disabled="{{busy}}">退出后台</button></view>
+ <view class="title">老师后台</view>
+ <block wx:if="{{locked}}">
+  <view class="muted">输入管理密码，管理 SOP 和学员权益</view>
+  <view class="password-box"><input password type="text" value="{{password}}" maxlength="64" data-key="password" bindinput="input" bindconfirm="unlock" placeholder="请输入密码" disabled="{{busy}}" /></view>
+  <button class="primary enter" bindtap="unlock" disabled="{{busy || !password}}">{{busy ? '正在验证…' : '进入后台'}}</button>
+ </block>
+ <block wx:else>
+  <view class="sections"><button class="{{tab === 'courses' ? 'selected' : ''}}" data-tab="courses" bindtap="switchSection" disabled="{{busy}}">SOP 管理</button><button class="{{tab === 'students' ? 'selected' : ''}}" data-tab="students" bindtap="switchSection" disabled="{{busy}}">学员与额度</button><button class="text-button" bindtap="refresh" disabled="{{busy}}">刷新</button></view>
+  <view wx:if="{{busy}}" class="help">正在处理，请稍候…</view>
+  <block wx:if="{{tab === 'courses'}}">
+   <block wx:if="{{!activeCourse}}">
+    <button class="primary" bindtap="newCourse" disabled="{{busy}}">新增 SOP</button>
+    <button wx:for="{{courses}}" wx:key="id" class="list-row" data-id="{{item.id}}" bindtap="selectCourse" disabled="{{busy}}"><view><view class="item-title">{{item.lesson.name}}</view><view class="help">{{item.published ? '已发布' : '草稿'}}{{item.changed ? ' · 有未发布修改' : ''}} · {{item.lesson.shots.length}} 镜</view></view><text>›</text></button>
+   </block>
+   <block wx:else>
+    <button class="text-button back-list" bindtap="backToList" disabled="{{busy}}">‹ 返回课程列表</button>
+    <view class="field"><view class="help">分类</view><picker range="{{categories}}" range-key="name" value="{{categoryIndex}}" bindchange="categoryChange" disabled="{{busy}}"><view class="picker-value">{{categories[categoryIndex].name}} ›</view></picker></view>
+    <view wx:for="{{lessonFields}}" wx:key="key" class="field"><view class="help">{{item.label}}</view><textarea auto-height value="{{activeCourse.lesson[item.key]}}" data-field="{{item.key}}" bindinput="courseInput" maxlength="4000" disabled="{{busy}}" /></view>
+    <view class="field"><view class="help">完整视频（可暂不上传）</view><view class="help">{{activeCourse.lesson.file ? '已上传完整视频' : '暂无完整视频'}}</view><button class="outline" data-field="file" bindtap="upload" disabled="{{busy}}">选择完整视频</button></view>
+    <view wx:for="{{activeCourse.lesson.shots}}" wx:key="index" wx:for-item="shot" wx:for-index="shotIndex" class="shot-editor">
+     <button class="shot-toggle" data-index="{{shotIndex}}" bindtap="toggleShot" disabled="{{busy}}">{{shotIndex + 1}} · {{shot.title || '新镜头'}} <text>{{expanded === shotIndex ? '收起' : '展开'}}</text></button>
+     <block wx:if="{{expanded === shotIndex}}">
+      <view wx:for="{{shotFields}}" wx:key="key" class="field"><view class="help">{{item.label}}</view><textarea auto-height value="{{shot[item.key]}}" data-field="{{item.key}}" data-shot="{{shotIndex}}" bindinput="courseInput" maxlength="4000" disabled="{{busy}}" /></view>
+      <view class="media-actions"><button class="outline" data-field="clip" data-shot="{{shotIndex}}" bindtap="upload" disabled="{{busy}}">{{shot.clip ? '更换片段' : '上传片段'}}</button><button class="outline" data-field="clipPoster" data-shot="{{shotIndex}}" bindtap="upload" disabled="{{busy}}">{{shot.clipPoster ? '更换封面' : '上传封面'}}</button><button class="outline" data-field="image" data-shot="{{shotIndex}}" bindtap="upload" disabled="{{busy}}">{{shot.image ? '更换示意图' : '上传示意图'}}</button></view>
+      <button class="text-button" data-index="{{shotIndex}}" bindtap="removeShot" disabled="{{busy || activeCourse.lesson.shots.length === 1}}">移除这一镜</button>
+     </block>
+    </view>
+    <button class="outline" bindtap="addShot" disabled="{{busy || activeCourse.lesson.shots.length >= 100}}">增加一个镜头</button>
+    <view class="save-actions"><button class="outline" bindtap="saveCourse" disabled="{{busy}}">保存草稿</button><button class="primary" bindtap="saveCourse" data-publish="{{true}}" disabled="{{busy}}">保存并发布</button></view>
+    <button wx:if="{{activeCourse.published}}" class="text-button" bindtap="unpublish" disabled="{{busy}}">下架这条 SOP</button>
+   </block>
+  </block>
+  <block wx:else>
+   <block wx:if="{{!student && !newStudent}}">
+    <button class="primary" bindtap="newStudent" disabled="{{busy}}">新增学员</button>
+    <view wx:if="{{!students.length}}" class="empty muted">暂无学员</view>
+    <button wx:for="{{students}}" wx:key="owner" class="list-row" data-owner="{{item.owner}}" bindtap="selectStudent" disabled="{{busy}}"><view><view class="item-title">{{item.label}}</view><view class="help">{{item.enabled ? '允许使用' : '已停用'}} · 剩余 {{item.remaining}} 次</view></view><text>›</text></button>
+   </block>
+   <block wx:elif="{{newStudent}}">
+    <button class="text-button back-list" bindtap="backToList" disabled="{{busy}}">‹ 返回学员列表</button>
+    <view class="field"><view class="help">学员备注</view><input value="{{studentLabel}}" data-key="studentLabel" bindinput="input" maxlength="60" disabled="{{busy}}" /></view>
+    <view class="field"><view class="help">{{authMode === 'mock' ? '模拟设备标识（仅本机测试）' : '学员 OpenID'}}</view><input value="{{identity}}" data-key="identity" bindinput="input" maxlength="200" disabled="{{busy}}" /></view>
+    <button class="primary" bindtap="addStudent" disabled="{{busy || !identity || !studentLabel}}">添加学员</button>
+   </block>
+   <block wx:else>
+    <button class="text-button back-list" bindtap="backToList" disabled="{{busy}}">‹ 返回学员列表</button>
+    <view class="subtitle">{{student.label}}</view><view class="muted">{{student.enabled ? '允许使用' : '已停用'}}</view>
+    <view class="usage"><view>套餐剩余 <text>{{student.remaining}} 次</text></view><view>本期已用 <text>{{student.membership ? student.membership.used : 0}} 次</text></view><view>今日已用 / 上限 <text>{{student.todayUsed}} / {{student.dailyLimit}}</text></view></view>
+    <view class="muted">有效至：{{studentExpires}}（北京时间）</view><view class="subtitle records-title">开通、续期或补次数</view><view class="help">只续期：次数填 0。只补次数：天数填 0，会员须仍有效。重复提交会再次增加。</view>
+    <view class="field"><view class="help">增加天数</view><input type="number" value="{{days}}" data-key="days" bindinput="input" disabled="{{busy}}" /></view>
+    <view class="field"><view class="help">增加次数</view><input type="number" value="{{quota}}" data-key="quota" bindinput="input" disabled="{{busy}}" /></view>
+    <view class="field"><view class="help">权益名称 / 操作备注</view><input value="{{grantLabel}}" data-key="grantLabel" bindinput="input" maxlength="60" disabled="{{busy}}" /></view>
+    <button class="primary" bindtap="grant" disabled="{{busy || (!days && !quota)}}">确认开通 / 增加</button>
+    <button class="text-button" bindtap="toggleEnabled" disabled="{{busy}}">{{student.enabled ? '停用学员' : '启用学员'}}</button>
+    <view class="subtitle records-title">最近使用记录</view><view wx:if="{{!student.records.length}}" class="muted">暂无记录</view><view wx:for="{{student.records}}" wx:key="id" class="record">{{item.status}} · 消耗 {{item.charged}} 次</view>
+   </block>
+  </block>
+ </block>
+ <view wx:if="{{error}}" class="notice" role="alert">{{error}}</view><view wx:if="{{notice}}" class="success" role="status">{{notice}}</view>
+</view>

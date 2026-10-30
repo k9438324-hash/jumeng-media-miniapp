@@ -1,6 +1,6 @@
 <view class="ai-page" style="height:calc(100vh - {{keyboardHeight}}px);">
  <view class="ai-top">
-  <view class="ai-heading"><brand-menu items="{{menuItems}}" busy="{{busy || connecting}}" bind:command="menuCommand" /></view>
+  <view class="ai-heading"><brand-menu items="{{menuItems}}" busy="{{busy || connecting}}" bind:command="menuCommand" /><button class="teacher-entry" bindtap="openTeacher" disabled="{{busy || connecting}}">老师后台</button></view>
   <view wx:if="{{isMock}}" class="mock-row"><text class="mode-tag">模拟模式</text></view>
   <view wx:if="{{sessionExpired && error}}" class="auth-notice" role="alert"><text class="auth-bar"></text><text class="auth-text">登录已过期</text><button class="auth-retry" bindtap="retry">重试</button></view>
   <view wx:elif="{{error}}" class="network-notice notice {{errorKind === 'warning' ? 'warning' : ''}}" role="alert"><text>{{error}}</text><button class="text-button" bindtap="retry">重试</button></view>

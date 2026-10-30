@@ -5,6 +5,8 @@ import { Store, HttpError, hash, type Context, type Job, type Conversation } fro
 import type { Config } from './config.js';
 import { generate, prompt, type Provider } from './provider.js';
 import { Content } from './content.js';
+import { randomBytes, timingSafeEqual } from 'node:crypto';
+import { managementRequest } from './admin.js';
 function publicConversation({ owner: _owner, ...c }: Conversation) { return c; }
 function publicJob({ owner: _owner, requestId: _requestId, ...j }: Job) { return j; }
 async function body(req: IncomingMessage): Promise<Record<string, unknown>> {
@@ -25,6 +27,8 @@ export function createApplication(config: Config, provider: Provider = generate)
   const content = new Content(store.db);
   const running = new Map<string, { controller: AbortController; promise: Promise<void> }>();
   const loginAttempts = new Map<string, { since: number; count: number }>();
+  const teacherAttempts = new Map<string, { since: number; count: number }>();
+  const teacherSessions = new Map<string, { owner: string; expiresAt: number }>();
   const send = (res: ServerResponse, code: number, data: unknown) => { res.writeHead(code, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' }); res.end(JSON.stringify(data)); };
   async function run(job: Job) {
     const controller = new AbortController();
@@ -116,6 +120,32 @@ export function createApplication(config: Config, provider: Provider = generate)
       const owner = store.owner(token);
       // 实时检查名单，已移除的学员不能继续用旧会话调用。
       if ((config.authMode === 'wechat' && !store.allowed(owner,config.allowedOpenids)) || store.db.prepare('SELECT enabled FROM students WHERE owner=?').get(owner)?.enabled===0) throw new HttpError(403, '使用权限已关闭');
+      if (path === '/teacher/login' && req.method === 'POST') {
+        if (!config.teacherPasswordHash) throw new HttpError(503, '老师后台尚未配置密码');
+        const ip=req.socket.remoteAddress || 'unknown';
+        let rate=teacherAttempts.get(ip);
+        if (!rate || Date.now()-rate.since>=15*60000) {rate={since:Date.now(),count:0};teacherAttempts.set(ip,rate);}
+        if (rate.count>=5) throw new HttpError(429, '密码尝试次数过多，请 15 分钟后再试');
+        const data=await body(req);rate.count++;
+        const actual=Buffer.from(hash(typeof data.password==='string'?data.password:''),'hex');
+        const expected=Buffer.from(config.teacherPasswordHash,'hex');
+        if (actual.length!==expected.length || !timingSafeEqual(actual,expected)) throw new HttpError(403,'密码不正确');
+        rate.count=0;
+        for (const [key,value] of teacherSessions) if (value.expiresAt<=Date.now() || value.owner===owner) teacherSessions.delete(key);
+        const teacherToken=randomBytes(32).toString('hex'),expiresAt=Date.now()+30*60000;
+        teacherSessions.set(teacherToken,{owner,expiresAt});
+        return send(res,200,{teacherToken,expiresAt});
+      }
+      if (path.startsWith('/teacher/')) {
+        const teacherToken=String(req.headers['x-teacher-token'] || ''),session=teacherSessions.get(teacherToken);
+        if (!session || session.owner!==owner || session.expiresAt<=Date.now()) {
+          if (session && session.expiresAt<=Date.now()) teacherSessions.delete(teacherToken);
+          throw new HttpError(401,'请重新输入老师后台密码');
+        }
+        if (path==='/teacher/logout' && req.method==='POST') {teacherSessions.delete(teacherToken);return send(res,200,{ok:true});}
+        const url=new URL(req.url || '/', 'http://localhost');url.pathname=url.pathname.replace(/^\/teacher\//,'/api/');
+        return send(res,200,await managementRequest(config,store,content,req,url));
+      }
       if (path === '/course' && req.method === 'GET') return send(res,200,content.course());
       if (path === '/account' && req.method === 'GET') return send(res, 200, store.account(owner,config.dailyLimit));
       if (path === '/conversations') {

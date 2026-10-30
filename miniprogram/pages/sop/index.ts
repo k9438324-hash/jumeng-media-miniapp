@@ -51,6 +51,7 @@ Page({
   },
   currentTime: 0,
   courseEpoch: 0,
+  openTeacher() { wx.navigateTo({ url: '/pages/teacher/index' }); },
   menuCommand(e: WechatMiniprogram.CustomEvent<{ action: string }>) {
     if (e.detail.action === 'catalog') this.back();
     if (e.detail.action === 'privacy') this.showPrivacy();

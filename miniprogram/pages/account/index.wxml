@@ -1,5 +1,5 @@
 <view class="account-page">
- <view class="brand-heading"><brand-menu items="{{menuItems}}" busy="{{loading}}" bind:command="menuCommand" /></view>
+ <view class="brand-heading"><brand-menu items="{{menuItems}}" busy="{{loading}}" bind:command="menuCommand" /><button class="teacher-entry" bindtap="openTeacher" disabled="{{loading}}">老师后台</button></view>
  <view class="title">会员与使用</view>
  <view class="muted">查看 AI 权益和调用记录</view>
  <button wx:if="{{!account}}" class="account-refresh" bindtap="refresh" disabled="{{loading}}">{{loading ? '正在查询…' : '登录并查看'}}</button>

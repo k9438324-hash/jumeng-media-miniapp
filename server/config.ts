@@ -5,6 +5,7 @@ export interface Config {
   deepseekKey: string; deepseekBase: string; deepseekModel: string;
   dailyLimit: number; dbPath: string; mediaRoot: string; mockDelay: number;
   upstreamTimeout: number;
+  teacherPasswordHash?: string;
 }
 export function loadConfig(env = process.env): Config {
   const authMode = env.AUTH_MODE || 'mock', aiMode = env.AI_MODE || 'mock';
@@ -24,5 +25,5 @@ export function loadConfig(env = process.env): Config {
     appId: env.WECHAT_APP_ID || '', appSecret: env.WECHAT_APP_SECRET || '', allowedOpenids,
     deepseekKey: env.DEEPSEEK_API_KEY || '', deepseekBase, deepseekModel: env.DEEPSEEK_MODEL || 'deepseek-flash',
     dailyLimit, dbPath: resolve(env.DB_PATH || 'server/data/jumeng.sqlite'), mediaRoot: env.MEDIA_ROOT ? resolve(env.MEDIA_ROOT) : '',
-    mockDelay: 100, upstreamTimeout: 90000 };
+    mockDelay: 100, upstreamTimeout: 90000, teacherPasswordHash: env.TEACHER_PASSWORD_HASH || '' };
 }

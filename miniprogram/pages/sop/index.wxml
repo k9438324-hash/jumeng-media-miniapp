@@ -1,5 +1,5 @@
 <view class="page sop-page {{lesson ? 'detail-page' : ''}}">
- <view class="brand-heading"><brand-menu items="{{menuItems}}" bind:command="menuCommand" /></view>
+ <view class="brand-heading"><brand-menu items="{{menuItems}}" bind:command="menuCommand" /><button class="teacher-entry" bindtap="openTeacher">老师后台</button></view>
  <view wx:if="{{courseNotice}}" class="notice warning">{{courseNotice}}</view>
  <block wx:if="{{!lesson}}">
   <view class="title">对标 SOP</view>
