@@ -1,0 +1,4 @@
+interface:
+  display_name: "jumeng-video-sop（视频拆解成照拍 SOP）"
+  short_description: "对照视频画面与 SRT 字幕，生成新人能照拍的逐镜说明并导入小程序草稿"
+  default_prompt: "使用 $jumeng-video-sop 对照我提供的视频和 SRT，拆成新人能一步步照拍的 SOP，并生成可导入聚梦小程序的草稿。"
