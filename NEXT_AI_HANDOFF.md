@@ -6,6 +6,8 @@ GitHub私有仓库：https://github.com/k9438324-hash/jumeng-media-miniapp ，�
 
 ## 从这里运行
 
+最新真实API进展：2026-10-30已使用本机server/.env凭证，通过服务端DeepSeek适配完成真实连通测试，模型deepseek-flash返回“连接成功”。本机AI_MODE已改为deepseek；身份仍mock，AppSecret尚未配置，不能称为真实微信身份或手机验收通过。凭证不在仓库中，其他机器需自行配置。
+
 Claude进行UI设计与原生界面实现时，直接使用 `docs/CLAUDE_UI_PROMPT.md`，并遵守UI_HANDOFF的字段和事件契约。
 
 ```sh
