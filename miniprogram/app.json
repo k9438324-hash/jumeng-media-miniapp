@@ -1,13 +1,33 @@
 {
-  "pages": ["pages/sop/index", "pages/ai/index"],
-  "window": { "navigationBarTitleText": "聚梦传媒", "navigationBarBackgroundColor": "#ffffff", "navigationBarTextStyle": "black" },
+  "pages": [
+    "pages/sop/index",
+    "pages/ai/index"
+  ],
+  "window": {
+    "navigationBarTitleText": "聚梦传媒",
+    "navigationBarBackgroundColor": "#F5F1E8",
+    "navigationBarTextStyle": "black",
+    "backgroundColor": "#F5F1E8"
+  },
   "tabBar": {
-    "color": "#777777", "selectedColor": "#222222", "backgroundColor": "#ffffff",
+    "custom": true,
+    "color": "#8F8A7F",
+    "selectedColor": "#1C1B19",
+    "backgroundColor": "#F5F1E8",
     "list": [
-      { "pagePath": "pages/sop/index", "text": "对标 SOP" },
-      { "pagePath": "pages/ai/index", "text": "聚梦AI" }
+      {
+        "pagePath": "pages/sop/index",
+        "text": "对标 SOP"
+      },
+      {
+        "pagePath": "pages/ai/index",
+        "text": "聚梦AI"
+      }
     ]
   },
-  "style": "v2", "sitemapLocation": "sitemap.json",
-  "networkTimeout": { "request": 15000 }
+  "style": "v2",
+  "sitemapLocation": "sitemap.json",
+  "networkTimeout": {
+    "request": 15000
+  }
 }

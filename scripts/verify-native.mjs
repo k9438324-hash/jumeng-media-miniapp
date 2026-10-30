@@ -8,7 +8,7 @@ if(!existsSync(wcc)||!existsSync(wcsc))throw new Error('未找到工具附带的
 const output=resolve('test-results/native');mkdirSync(output,{recursive:true});
 for(const [exe,files,name] of [
   [wcc,['pages/sop/index.wxml','pages/ai/index.wxml'],'templates.js'],
-  [wcsc,['app.wxss','pages/sop/index.wxss','pages/ai/index.wxss'],'styles.css'],
+  [wcsc,['app.wxss','pages/sop/index.wxss','pages/ai/index.wxss','styles/tokens.wxss'],'styles.css'],
 ]){
   try{execFileSync(exe,['-o',resolve(output,name),...files],{cwd:resolve('miniprogram'),stdio:'pipe',windowsHide:true});}
   catch(e){console.error(e.stderr?.toString()||e.stdout?.toString()||e.message);process.exit(1);}

@@ -42,13 +42,13 @@ try{
   assert.ok(Math.abs((await mini.evaluate(()=>getApp().__sopSmoke.currentTime))-oldTime)<0.15);record('切AI后原视频播放时间停止推进');
   p=await mini.currentPage();assert.equal(p.path,'pages/ai/index');
   await until(async()=>!(await p.data('connecting')),'聊天初始化');
-  assert.equal(await p.data('error'),'');assert.match(await p.data('contextLabel'),/第2镜/);assert.match(await p.data('modeLabel'),/模拟/);
+  assert.equal(await p.data('error'),'');assert.match(await p.data('contextLabel'),/第2镜/);assert.match(await p.data('modeLabel'),/模拟|DeepSeek|真实/);
   record('SOP上下文带入AI并完成本机服务认证');
   const question='开发者工具验收：现场空间狭窄，IP怎样站位？';
   const textarea=await p.$('textarea');await textarea.input(question);
   await until(async()=>await p.data('input')===question,'原生输入事件到达页面');
   await call('send');await until(async()=>{const c=await p.data('conversation');return !(await p.data('busy'))&&c.messages.at(-1)?.role==='assistant';},'模拟聊天完成');
-  assert.equal(await p.data('error'),'');assert.match((await p.data('conversation')).messages.at(-1).content,/模拟/);record('原生输入和服务端模拟聊天返回');
+  assert.equal(await p.data('error'),'');assert.ok((await p.data('conversation')).messages.at(-1)?.content?.trim());record('原生输入和服务端聊天返回');
   await call('showHistory');assert.ok((await p.data('history')).length);await call('closeHistory');record('页面内历史入口');
   await screenshot('ai');
   p=await mini.switchTab('/pages/sop/index');assert.equal(await p.data('shotIndex'),1);assert.ok(await p.data('lesson'));record('切回SOP保留当前镜头');

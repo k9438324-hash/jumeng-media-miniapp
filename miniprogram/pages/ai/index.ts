@@ -10,7 +10,15 @@ Page({
     modeLabel: '正在连接服务端', input: '', conversation: null as Conversation | null,
     contextLabel: '', busy: false, connecting: false, partial: '', status: '',
     error: '', historyOpen: false, history: [] as Pick<Conversation, 'id' | 'title' | 'updatedAt'>[],
-    examples: ['我在量房现场，空间很窄，手机应该站哪里？', 'IP不擅长口播，请改成提问式拍法', '客户不出镜，这组镜头怎么调整？'],
+    isMock: false, errorKind: 'error', sessionExpired: false, keyboardHeight: 0, scrollTarget: '', canRegenerate: false,
+    composerHeight: 180,
+    messageMockFlags: [] as boolean[],
+    historyGroups: [] as { label: string; items: (Pick<Conversation,'id'|'title'|'updatedAt'> & {timeLabel: string})[] }[],
+    examples: [
+      { label: '量房站位', text: '我在量房现场，空间很窄，手机应该站哪里？' },
+      { label: 'IP口播提词', text: 'IP不擅长口播，请改成提问式拍法' },
+      { label: '空间很窄怎么拍', text: '客户不出镜，这组镜头怎么调整？' },
+    ],
   },
   visible: false,
   epoch: 0,
@@ -18,12 +26,19 @@ Page({
   jobId: '',
   action: 'init' as RetryAction,
   loadId: '',
-  onShow() { this.visible = true; void this.initialize(); },
-  onHide() { this.visible = false; this.epoch++; clearTimeout(this.timer); },
+  onShow() { this.visible = true; void this.initialize(); this.syncTabBar(1); },
+  syncTabBar(index: number) {
+    if (typeof this.getTabBar === 'function' && this.getTabBar()) {
+      this.getTabBar().setData({ selected: index });
+    }
+  },
+  onHide() { this.visible = false; this.epoch++; clearTimeout(this.timer); this.setData({ keyboardHeight: 0 }); },
   onUnload() { this.visible = false; this.epoch++; clearTimeout(this.timer); },
   fail(error: unknown, action: RetryAction) {
     this.action = action;
-    this.setData({ error: error instanceof Error ? error.message : '请求失败，请重试', connecting: false });
+    const message = error instanceof Error ? error.message : '请求失败，请重试';
+    const sessionExpired = error instanceof ApiError && error.status === 401;
+    this.setData({ error: message, errorKind: /额度|开通|权限/.test(message) ? 'warning' : 'error', sessionExpired, connecting: false });
   },
   async initialize() {
     const epoch = ++this.epoch;
@@ -66,7 +81,8 @@ Page({
         throw e;
       }
       if (epoch !== this.epoch) return;
-      this.setData({ modeLabel: sessionLabel(), connecting: false });
+      this.setData({ modeLabel: sessionLabel(), isMock: sessionLabel().startsWith('模拟模式'), connecting: false });
+      this.composerSettled();
       const pendingSend = wx.getStorageSync(prefix + 'pendingSend') as PendingSend | undefined;
       if (pendingSend && pendingSend.conversationId === id) { this.setData({ busy: true }); await this.submit(pendingSend); return; }
       const job = wx.getStorageSync(prefix + 'job') as { conversationId: string; id: string } | undefined;
@@ -79,10 +95,30 @@ Page({
     const c = await api<Conversation>('/conversations/' + id);
     if (currentEpoch !== this.epoch) return;
     const lesson = course.lessons.find(l => l.id === c.context?.lessonId);
-    this.setData({ conversation: c, contextLabel: lesson ? lesson.name + ' · 第' + (c.context!.shotIndex + 1) + '镜（完整SOP已带入）' : '' });
+    const category = lesson ? course.categories.find(cat => cat.lessonIds.includes(lesson.id)) : undefined;
+    this.setData({ conversation: c, messageMockFlags: c.messages.map(m => m.content.startsWith('【模拟结果')), contextLabel: lesson ? (category ? category.name : lesson.name) + ' · 第' + (c.context!.shotIndex + 1) + '镜 ' + lesson.shots[c.context!.shotIndex].title : '' });
+    this.scrollToEnd();
     wx.setStorageSync(prefix + 'current', id);
   },
-  input(e: WechatMiniprogram.CustomEvent<{ value: string }>) { this.setData({ input: e.detail.value }); },
+  input(e: WechatMiniprogram.CustomEvent<{ value: string }>) { this.setData({ input: e.detail.value }); this.composerSettled(); },
+  scrollToEnd() { this.setData({ scrollTarget: '' }, () => this.setData({ scrollTarget: 'messages-end' })); },
+  composerSettled() {
+    if (!wx.createSelectorQuery) return;
+    wx.createSelectorQuery().in(this).select('.composer').boundingClientRect(rect => {
+      if (rect && !Array.isArray(rect)) this.setData({ composerHeight: rect.height + 16 });
+    }).exec();
+  },
+  keyboardChange(e: WechatMiniprogram.CustomEvent<{height: number}>) {
+    this.setData({ keyboardHeight: Math.max(0, Number(e.detail.height) || 0) });
+    this.composerSettled(); this.scrollToEnd();
+  },
+  inputFocus() { this.scrollToEnd(); this.composerSettled(); },
+  inputBlur() { this.setData({ keyboardHeight: 0 }); this.composerSettled(); },
+  async regenerate() {
+    const last = this.data.conversation?.messages.filter(m => m.role === 'user').pop();
+    if (!last || this.data.busy) return;
+    this.setData({ input: last.content, canRegenerate: false }); await this.send();
+  },
   example(e: WechatMiniprogram.TouchEvent) { this.setData({ input: e.currentTarget.dataset.text }); },
   async send() {
     if (this.data.busy || this.data.connecting || !this.data.input.trim() || !this.data.conversation) return;
@@ -117,7 +153,9 @@ Page({
     try {
       const job = await api<Job>('/generations/' + requestedJob);
       if (requestedJob !== this.jobId || job.conversationId !== this.data.conversation?.id) return;
+      this.setData({ isMock: job.mode === 'mock', modeLabel: job.mode === 'mock' ? '模拟模式 · 未调用真实 AI' : 'DeepSeek · 文字辅助', canRegenerate: job.status === 'stopped' });
       this.setData({ partial: job.text, error: '', status: job.status === 'running' ? '生成中…' : job.status === 'stopped' ? '已停止，已保留生成内容' : job.status === 'failed' ? '生成失败' : '已完成' });
+      this.scrollToEnd();
       if (job.status === 'running') {
         this.setData({ busy: true });
         if (this.visible) this.timer = setTimeout(() => { void this.poll(); }, 600);
@@ -161,12 +199,22 @@ Page({
     try {
       const c = await api<Conversation>('/conversations', 'POST', {});
       wx.setStorageSync(prefix + 'current', c.id); wx.removeStorageSync(prefix + 'job'); wx.removeStorageSync(prefix + 'pendingSend');
-      this.jobId = ''; this.setData({ conversation: c, contextLabel: '', partial: '', input: '', status: '', connecting: false, historyOpen: false });
+      this.jobId = ''; this.setData({ conversation: c, contextLabel: '', partial: '', input: '', status: '', connecting: false, historyOpen: false, canRegenerate: false });
     } catch (e) { this.fail(e, 'init'); }
   },
   async showHistory() {
     if (this.data.busy || this.data.connecting) return;
-    try { const result = await api<{ items: Conversation[] }>('/conversations'); this.setData({ history: result.items, historyOpen: true }); }
+    try {
+      const result = await api<{ items: Conversation[] }>('/conversations');
+      const groups = new Map<string, (Pick<Conversation,'id'|'title'|'updatedAt'> & {timeLabel: string})[]>();
+      for (const item of result.items) {
+        const date = new Date(item.updatedAt);
+        const label = date.getFullYear() + '/' + (date.getMonth()+1) + '/' + date.getDate();
+        if (!groups.has(label)) groups.set(label, []);
+        groups.get(label)!.push({ ...item, timeLabel: String(date.getHours()).padStart(2,'0') + ':' + String(date.getMinutes()).padStart(2,'0') });
+      }
+      this.setData({ history: result.items, historyGroups: [...groups].map(([label,items])=>({label,items})), historyOpen: true });
+    }
     catch (e) { this.fail(e, 'history'); }
   },
   closeHistory() { this.setData({ historyOpen: false }); },

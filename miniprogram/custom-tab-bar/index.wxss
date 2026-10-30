@@ -1,0 +1,77 @@
+.tab-bar {
+  position: fixed; left: 0; right: 0; bottom: 0;
+  display: flex;
+  background: var(--bg);
+  border-top: 1rpx solid var(--line);
+  padding-bottom: env(safe-area-inset-bottom);
+  z-index: 10;
+}
+.tab-item {
+  flex: 1;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  height: 112rpx;
+  position: relative;
+}
+.tab-icon-wrap {
+  position: relative; height: 44rpx; width: 44rpx;
+  display: flex; align-items: center; justify-content: center;
+}
+.tab-mark {
+  position: absolute; top: -12rpx; left: 50%; transform: translateX(-50%);
+  width: 4rpx; height: 4rpx; border-radius: 2rpx;
+  opacity: 0;
+}
+.tab-item.active .tab-mark {
+  opacity: 1; background: var(--accent); width: 32rpx; height: 4rpx;
+}
+.tab-text {
+  margin-top: 4rpx;
+  font-size: 24rpx;
+  line-height: 1.4;
+  color: var(--ink-3);
+}
+.tab-item.active .tab-text {
+  color: var(--ink);
+  font-weight: 500;
+}
+
+/* 细线图标：线框文档（SOP） */
+.icon-doc {
+  width: 30rpx; height: 36rpx;
+  border: 3rpx solid currentColor;
+  border-radius: 3rpx;
+  position: relative;
+  color: var(--ink-3);
+}
+.tab-item.active .icon-doc { color: var(--accent); }
+.icon-doc::before {
+  content: ''; position: absolute; top: -3rpx; right: -3rpx;
+  width: 0; height: 0;
+  border-left: 12rpx solid transparent;
+  border-top: 12rpx solid var(--ink-3);
+}
+.tab-item.active .icon-doc::before { border-top-color: var(--accent); }
+.icon-doc::after {
+  content: ''; position: absolute; left: 6rpx; right: 6rpx;
+  height: 2rpx; background: currentColor;
+  top: 12rpx; box-shadow: 0 8rpx 0 currentColor;
+}
+
+/* 细线图标：线框对话气泡（AI） */
+.icon-bubble {
+  width: 34rpx; height: 28rpx;
+  border: 3rpx solid currentColor;
+  border-radius: 8rpx;
+  position: relative;
+  color: var(--ink-3);
+}
+.tab-item.active .icon-bubble { color: var(--accent); }
+.icon-bubble::after {
+  content: ''; position: absolute;
+  bottom: -6rpx; left: 6rpx;
+  width: 10rpx; height: 10rpx;
+  border-left: 3rpx solid currentColor;
+  border-bottom: 3rpx solid currentColor;
+  transform: rotate(-45deg) skew(10deg, 10deg);
+  background: var(--bg);
+}

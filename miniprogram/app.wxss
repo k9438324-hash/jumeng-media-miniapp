@@ -1,12 +1,20 @@
-/* Claude 视觉入口：全局 token 与布局基类；不绑定业务字段。 */
-page { --surface: #fff; --background: #f6f6f6; --text: #222; --muted: #666; --line: #ddd; --accent: #333; --radius: 12rpx; background: var(--background); color: var(--text); font-size: 28rpx; line-height: 1.65; }
-.page { padding: 28rpx; padding-bottom: calc(36rpx + env(safe-area-inset-bottom)); }
-.title { font-size: 38rpx; font-weight: 600; margin: 18rpx 0; }
-.subtitle { font-size: 31rpx; font-weight: 600; margin: 12rpx 0; }
-.muted { color: var(--muted); font-size: 24rpx; margin: 12rpx 0; }
-.card { background: var(--surface); border: 1rpx solid var(--line); border-radius: var(--radius); padding: 24rpx; margin: 20rpx 0; }
-.notice { background: #fff4de; padding: 16rpx; margin: 16rpx 0; word-break: break-all; }
-.row { display: flex; flex-wrap: wrap; align-items: center; gap: 12rpx; margin: 16rpx 0; }
-.row button { margin: 0; }
-button { border-radius: var(--radius); font-size: 28rpx; }
-button.selected { background: var(--accent); color: white; }
+@import "styles/tokens.wxss";
+page { --tabbar-height:112rpx; background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:var(--size-body);line-height:1.65; }
+view,text,button,textarea { box-sizing:border-box; }
+text,view { overflow-wrap:anywhere;word-break:break-all; }
+button { margin:0;padding:16rpx 24rpx;min-height:88rpx;border:0;border-radius:12rpx;background:transparent;color:var(--ink);font:inherit;line-height:1.65;display:flex;align-items:center;justify-content:center; }
+button::after { border:0; } button[disabled] { color:var(--ink-3);background:transparent;opacity:.65; }
+button.primary { background:var(--accent);color:#FFFFFF; }
+button.primary[disabled] { background:var(--select);color:var(--ink-3); }
+.page { padding:32rpx;padding-bottom:calc(48rpx + var(--tabbar-height) + env(safe-area-inset-bottom)); }
+.title { font-family:var(--font-title);font-size:48rpx;line-height:1.25;font-weight:300;margin:0 0 16rpx;letter-spacing:1rpx; }
+.subtitle { font-size:34rpx;line-height:1.35;font-weight:400; }
+.muted { color:var(--ink-2);font-size:26rpx; }
+.help { color:var(--ink-3);font-size:26rpx; }
+.row { display:flex;align-items:center;gap:16rpx; }
+.text-button { background:transparent;border:0;padding:8rpx 16rpx;font-size:26rpx;min-height:88rpx; }
+.notice { border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:16rpx 0;font-size:26rpx;color:var(--danger); }
+.notice.warning { color:var(--warn); }
+.mode-tag { display:inline-flex;align-items:center;border:1px solid var(--warn);color:var(--warn);border-radius:8rpx;padding:0 8rpx;font-size:24rpx; }
+.skeleton { background:var(--select);border-radius:8rpx;height:24rpx;margin:24rpx 0; }
+.skeleton.short { width:55%; }

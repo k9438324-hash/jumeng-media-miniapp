@@ -1,45 +1,65 @@
-<view class="page">
-  <view wx:if="{{!lesson}}">
-    <view class="title">对标 SOP</view>
-    <view class="muted">选择现场类型，按镜头照拍</view>
-    <view class="categories">
-      <button wx:for="{{categories}}" wx:key="id" size="mini" class="{{categoryId === item.id ? 'selected' : ''}}" data-id="{{item.id}}" bindtap="selectCategory">{{item.name}}</button>
-    </view>
-    <view wx:for="{{cases}}" wx:key="id" class="card" data-id="{{item.id}}" bindtap="openCase">
-      <view class="subtitle">{{item.name}}</view>
-      <view>{{item.task}}</view>
-      <view class="muted">{{item.shots.length}} 镜 · 点击进入 / 继续阅读</view>
-    </view>
+<view class="page sop-page {{lesson ? 'detail-page' : ''}}">
+ <block wx:if="{{!lesson}}">
+  <view class="title">对标 SOP</view><view class="muted intro">选一种现场，照着拍清楚。</view>
+  <view class="category-bar"><view class="categories"><button wx:for="{{categories}}" wx:key="id" class="category {{categoryId === item.id ? 'selected' : ''}}" data-id="{{item.id}}" bindtap="selectCategory">{{item.name}}</button></view></view>
+  <view class="case-list"><view wx:for="{{cases}}" wx:key="id" class="case-row card" data-id="{{item.id}}" bindtap="openCase" role="button" aria-label="{{item.name}}">
+   <view class="case-cover">
+    <image wx:if="{{item.cover}}" class="case-cover-img" src="{{item.cover}}" mode="aspectFill" lazy-load />
+    <view wx:else class="case-cover-ph"><text class="case-cover-ph-icon"></text></view>
+    <view wx:if="{{progressMap[item.id]}}" class="case-cover-badge"><text class="case-dot"></text>继续</view>
+   </view>
+   <view class="case-body">
+    <view class="case-name">{{item.name}}</view>
+    <view class="case-task">{{item.displayTask}}</view>
+    <view class="case-meta"><text class="case-count">{{item.shots.length}} 个镜头</text><text class="case-arrow"></text></view>
+   </view>
+  </view></view>
+  <view class="footer-links"><button class="footer-link" bindtap="showPrivacy">隐私说明</button></view>
+ </block>
+ <block wx:else>
+  <view class="detail-heading"><button class="text-button back" bindtap="back" aria-label="返回目录">‹ 返回</button><text class="detail-name">{{lesson.name}}</text></view>
+  <view class="video-modes"><button class="{{!full ? 'selected' : ''}}" bindtap="toggleFull" disabled="{{!full}}">当前参考片段</button><button class="{{full ? 'selected' : ''}}" bindtap="toggleFull" disabled="{{full}}">完整原片</button></view>
+  <video wx:if="{{videoSrc}}" id="reference" class="reference-video" src="{{videoSrc}}" poster="{{poster}}" initial-time="{{initialTime}}" object-fit="contain" autoplay="{{false}}" controls bindtimeupdate="timeUpdate" binderror="videoError" />
+  <view wx:else class="media-empty muted">参考视频暂未配置，拍摄步骤仍可阅读。</view>
+  <view wx:if="{{mediaError}}" class="notice">视频暂时无法播放<button class="text-button" bindtap="replay">重新加载</button></view>
+  <view class="shot-heading"><view class="shot-count"><text class="current-shot">{{shotIndex + 1}}</text><text class="help"> / {{lesson.shots.length}} 镜</text></view><view class="subtitle">{{shot.title}}</view></view>
+  <view class="shot-nav"><button bindtap="previous" disabled="{{shotIndex === 0}}">上一镜</button><button bindtap="replay" disabled="{{!videoSrc}}">重播</button><button class="primary" bindtap="next" disabled="{{shotIndex === lesson.shots.length - 1}}">下一镜</button></view>
+  <view class="instructions">
+   <view class="step"><view class="step-label">站在哪里</view><view>{{shot.where}}</view></view>
+   <view class="step"><view class="step-label">手机对准哪里</view><view>{{shot.frame}}</view></view>
+   <view class="step"><view class="step-label">开始后做什么</view><view>{{shot.action}}</view></view>
+   <view class="step"><view class="step-label">IP说什么或问什么</view><view class="quote">{{shot.say}}</view></view>
+   <view class="step"><view class="step-label">什么时候停止</view><view>{{shot.stop}}</view></view>
+   <view class="step"><view class="step-label"><text class="check-icon"></text>拍够的标准</view><view>{{shot.check}}</view></view>
   </view>
-  <view wx:else>
-    <button size="mini" bindtap="back">返回目录</button>
-    <view class="title">{{lesson.name}}</view>
-    <view class="muted">{{lesson.need}}</view>
-    <view class="row">
-      <button size="mini" bindtap="toggleFull">{{full ? '返回当前参考片段' : '观看完整原片'}}</button>
-      <text>{{full ? '完整原片' : '当前镜头参考片段'}}</text>
-    </view>
-    <video wx:if="{{videoSrc}}" id="reference" class="reference-video" src="{{videoSrc}}" poster="{{poster}}" initial-time="{{initialTime}}" object-fit="contain" autoplay="{{false}}" controls bindtimeupdate="timeUpdate" binderror="videoError" />
-    <view wx:else class="notice">媒体未配置：请配置 mediaBase。下方 SOP 可正常阅读。</view>
-    <view wx:if="{{mediaError}}" class="notice">{{mediaError}}</view>
-    <view class="row">
-      <button size="mini" bindtap="previous" disabled="{{shotIndex === 0}}">上一镜</button>
-      <button size="mini" bindtap="replay" disabled="{{!videoSrc}}">重播 / 重试</button>
-      <button size="mini" bindtap="next" disabled="{{shotIndex === lesson.shots.length - 1}}">下一镜</button>
-    </view>
-    <view class="subtitle">第 {{shotIndex + 1}} / {{lesson.shots.length}} 镜 · {{shot.title}}</view>
-    <view class="card instructions">
-      <view><text class="label">站在哪里</text>{{shot.where}}</view>
-      <view><text class="label">手机对准哪里</text>{{shot.frame}}</view>
-      <view><text class="label">开始后做什么</text>{{shot.action}}</view>
-      <view><text class="label">IP说什么或问什么</text>{{shot.say}}</view>
-      <view><text class="label">什么时候停止</text>{{shot.stop}}</view>
-      <view><text class="label">拍够的标准</text>{{shot.check}}</view>
-    </view>
-    <button bindtap="bringToAI">带入聚梦AI，按现场调整拍法</button>
-    <view class="muted">已自动保存当前镜头和播放位置</view>
-    <view class="shot-list">
-      <button wx:for="{{lesson.shots}}" wx:key="title" size="mini" data-index="{{index}}" class="{{shotIndex === index ? 'selected' : ''}}" bindtap="selectShot">{{index + 1}}. {{item.title}}</button>
-    </view>
-  </view>
+  <view class="help saved-note">已保存阅读位置</view>
+  <view class="shot-list"><button wx:for="{{lesson.shots}}" wx:key="title" data-index="{{index}}" class="shot-option {{shotIndex === index ? 'selected' : ''}}" bindtap="selectShot">{{index + 1}}. {{item.title}}</button></view>
+  <view class="sop-action"><button class="primary" bindtap="bringToAI">带入聚梦AI，按现场调整拍法</button></view>
+ </block>
+ <view wx:if="{{privacyOpen}}" class="privacy-mask" bindtap="closePrivacy" aria-label="关闭隐私说明"></view>
+ <view wx:if="{{privacyOpen}}" class="privacy-sheet" role="dialog" aria-label="隐私说明">
+  <view class="privacy-heading"><view class="subtitle">隐私说明</view><button class="text-button" bindtap="closePrivacy">关闭</button></view>
+  <scroll-view scroll-y class="privacy-scroll">
+   <view class="privacy-block">
+    <view class="privacy-h">我们收集的信息</view>
+    <view class="privacy-p">当你使用「聚梦传媒」小程序时，我们会收集：微信身份标识（用于识别你的学习记录与权限）、你主动输入的文字内容、阅读进度等学习数据。我们不会收集与你使用本服务无关的个人信息。</view>
+   </view>
+   <view class="privacy-block">
+    <view class="privacy-h">信息的使用</view>
+    <view class="privacy-p">上述信息仅用于：为你提供课程学习记录、AI 拍摄建议、学习进度同步等核心功能。你的输入内容会发送至 AI 服务以生成回复。</view>
+   </view>
+   <view class="privacy-block">
+    <view class="privacy-h">AI 生成内容说明</view>
+    <view class="privacy-p">本小程序的「聚梦AI」功能由人工智能模型生成内容。AI 生成的内容仅供参考，不构成专业意见，请结合现场实际情况核对后使用。</view>
+   </view>
+   <view class="privacy-block">
+    <view class="privacy-h">信息的存储与保护</view>
+    <view class="privacy-p">我们采用行业通行的安全措施保护你的信息，未经你的授权不会向第三方披露你的个人信息，法律法规另有规定的除外。</view>
+   </view>
+   <view class="privacy-block">
+    <view class="privacy-h">联系我们</view>
+    <view class="privacy-p">如你对本隐私说明或个人信息保护有任何疑问，可通过课程提供方与我们联系。</view>
+   </view>
+  </scroll-view>
+ </view>
 </view>
