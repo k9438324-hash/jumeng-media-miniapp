@@ -12,18 +12,18 @@ try{
   await until(async()=>{try{const page=await mini.currentPage();return !!page&&!!(await page.$('.page'));}catch{return false;}},'工具完成编译及页面挂载',25);
   let p=await mini.switchTab('/pages/sop/index');
   if(await p.data('lesson'))await call('back');
-  const categories=await p.data('categories');assert.deepEqual(categories.map(c=>c.name),['量房','开工','成品案例','见客户','巡检']);
+  const categories=await p.data('categories');assert.deepEqual(categories.map(c=>c.name),['量房','开工','案例','谈单','巡检']);
   for(let i=0;i<categories.length;i++){
-    const buttons=await p.$$('.categories button');await buttons[i].tap();
+    const buttons=await p.$$('.category');await buttons[i].tap();
     await until(async()=>await p.data('categoryId')===categories[i].id,'切换类别');
     await delay(200);
     assert.equal(await p.data('categoryId'),categories[i].id);assert.ok((await p.data('cases')).length);
   }
   record('五类真实原生目录及案例列表');
-  await (await p.$$('.categories button'))[0].tap();
+  await (await p.$$('.category'))[0].tap();
   await until(async()=>await p.data('categoryId')==='measure','返回量房类别');
   await screenshot('directory');console.log('检查：进入照拍案例');
-  await (await p.$('.card')).tap();await until(async()=>!!(await p.data('shot')),'照拍页');
+  await (await p.$('.case-row')).tap();await until(async()=>!!(await p.data('shot')),'照拍页');
   await call('showShot',0);await delay(300);
   assert.match(await p.data('videoSrc'),/clips\//);
   await call('next');await until(async()=>await p.data('shotIndex')===1,'下一镜');

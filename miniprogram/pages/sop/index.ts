@@ -1,22 +1,44 @@
 import source from '../../data/course';
-import { Lesson, Shot, boundedIndex, mediaUrl, normalizeProgress } from '../../domain';
+import { Lesson, Shot, boundedIndex, mediaUrl, normalizeProgress, Progress } from '../../domain';
 import { config } from '../../config';
 const lessons = source.lessons as Lesson[];
+
+// 分类显示名映射表：只改展示层，内部 category key 与数据结构不变。
+const categoryLabels: Record<string, string> = {
+  measure: '量房',
+  start: '开工',
+  case: '案例',
+  meet: '谈单',
+  inspect: '巡检',
+};
+// 固定五类显示顺序（与数据 category 顺序一致）
+const categoryOrder = ['measure', 'start', 'case', 'meet', 'inspect'];
+
 // 展示层去掉任务描述里的“让人看懂：”前缀，不改动 course 源数据。
 function displayTask(task: string): string { return task.replace(/^让人看懂[：:]\s*/, ''); }
-type CaseItem = Lesson & { displayTask: string; cover: string };
+
+type CaseItem = Lesson & { displayTask: string; isNew: boolean; readShotIndex: number; hasProgress: boolean };
 function toCases(lessonIds: number[]): CaseItem[] {
-  return lessons.filter(l => lessonIds.includes(l.id)).map(l => ({
-    ...l,
-    displayTask: displayTask(l.task),
-    // 封面用首镜示意图（assets/*.jpg），无媒体配置时留空，前端降级为占位。
-    cover: mediaUrl(config.mediaBase, l.shots[0]?.image || ''),
-  }));
+  return lessons.filter(l => lessonIds.includes(l.id)).map(l => {
+    const raw = wx.getStorageSync('jumeng:progress:' + l.id) as Partial<Progress> | undefined;
+    const progress = normalizeProgress(raw, l.shots.length);
+    return {
+      ...l,
+      displayTask: displayTask(l.task),
+      isNew: !raw,                 // 从未读过 → 显示“新”
+      hasProgress: !!raw,
+      readShotIndex: progress.shotIndex, // 0-based，展示层 +1
+    };
+  });
 }
+
 Page({
   data: {
-    categories: source.categories, categoryId: source.categories[0].id,
+    categories: source.categories.map(c => ({ ...c, name: categoryLabels[c.id] || c.name })),
+    categoryId: source.categories[0].id,
     cases: toCases(source.categories[0].lessonIds),
+    caseCount: 0,
+    showSearch: false,
     lesson: null as Lesson | null, shot: null as Shot | null, shotIndex: 0,
     videoSrc: '', poster: '', initialTime: 0, full: false, mediaError: '',
     progressMap: {} as Record<number, boolean>,
@@ -33,10 +55,18 @@ Page({
     const progressMap: Record<number, boolean> = {};
     for (const lesson of lessons) progressMap[lesson.id] = !!wx.getStorageSync('jumeng:progress:' + lesson.id);
     this.setData({ progressMap });
+    // 刷新当前分类案例（同步“新”标与进度）
+    const cat = source.categories.find(c => c.id === this.data.categoryId);
+    if (cat) this.setData({ cases: toCases(cat.lessonIds) });
   },
   onLoad() {
     const category = source.categories.find(c => c.id === wx.getStorageSync('jumeng:category'));
     if (category) this.setData({ categoryId: category.id, cases: toCases(category.lessonIds) });
+    this.updateCaseMeta();
+  },
+  updateCaseMeta() {
+    const cases = this.data.cases as CaseItem[];
+    this.setData({ caseCount: cases.length, showSearch: cases.length > 20 });
   },
   onHide() { this.pauseAndSave(); },
   onUnload() { this.pauseAndSave(); },
@@ -45,6 +75,7 @@ Page({
     const category = source.categories.find(c => c.id === e.currentTarget.dataset.id)!;
     wx.setStorageSync('jumeng:category', category.id);
     this.setData({ categoryId: category.id, cases: toCases(category.lessonIds), lesson: null, shot: null, videoSrc: '' });
+    this.updateCaseMeta();
   },
   openCase(e: WechatMiniprogram.TouchEvent) {
     this.pauseAndSave();

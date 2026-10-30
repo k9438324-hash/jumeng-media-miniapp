@@ -9,7 +9,7 @@ test('两个固定导航与五类真实案例，54镜必需字段齐全',()=>{
   assert.deepEqual(app.tabBar.list.map(x=>x.text),['对标 SOP','聚梦AI']);
   assert.equal(app.pages.length,2);assert.equal(app.pages[0],'pages/sop/index');
   const h=harness('miniprogram/pages/sop/index.js');h.page.onLoad();
-  assert.deepEqual(h.page.data.categories.map(c=>c.name),['量房','开工','成品案例','见客户','巡检']);
+  assert.deepEqual(h.page.data.categories.map(c=>c.name),['量房','开工','案例','谈单','巡检']);
   let shots=0;
   for(const category of h.page.data.categories){
     h.page.selectCategory(tap('id',category.id));assert.ok(h.page.data.cases.length>0);

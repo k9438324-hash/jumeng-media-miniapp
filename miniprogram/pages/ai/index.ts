@@ -15,9 +15,9 @@ Page({
     messageMockFlags: [] as boolean[],
     historyGroups: [] as { label: string; items: (Pick<Conversation,'id'|'title'|'updatedAt'> & {timeLabel: string})[] }[],
     examples: [
-      { label: '量房站位', text: '我在量房现场，空间很窄，手机应该站哪里？' },
-      { label: 'IP口播提词', text: 'IP不擅长口播，请改成提问式拍法' },
-      { label: '空间很窄怎么拍', text: '客户不出镜，这组镜头怎么调整？' },
+      '我在量房现场，空间很窄，手机应该站哪里？',
+      'IP不擅长口播，请改成提问式拍法',
+      '客户不出镜，这组镜头怎么调整？',
     ],
   },
   visible: false,
@@ -120,6 +120,20 @@ Page({
     this.setData({ input: last.content, canRegenerate: false }); await this.send();
   },
   example(e: WechatMiniprogram.TouchEvent) { this.setData({ input: e.currentTarget.dataset.text }); },
+  async retryMessage(e: WechatMiniprogram.TouchEvent) {
+    // 重试某条 AI 回复：把对应的用户问题重新填入并发送（沿用 regenerate 语义，不改业务）。
+    if (this.data.busy) return;
+    const index = Number(e.currentTarget.dataset.index);
+    const msgs = this.data.conversation?.messages || [];
+    const target = msgs[index];
+    if (!target || target.role !== 'assistant') return;
+    // 找该回复之前最近一条用户消息
+    let userContent = '';
+    for (let i = index - 1; i >= 0; i--) { if (msgs[i].role === 'user') { userContent = msgs[i].content; break; } }
+    if (!userContent) return;
+    this.setData({ input: userContent, canRegenerate: false });
+    await this.send();
+  },
   async send() {
     if (this.data.busy || this.data.connecting || !this.data.input.trim() || !this.data.conversation) return;
     const pending: PendingSend = { conversationId: this.data.conversation.id, requestId: 'req-' + Date.now() + '-' + Math.random().toString(36).slice(2), content: this.data.input.trim() };

@@ -3,46 +3,49 @@
   <view class="ai-heading">
    <view class="ai-title">聚梦AI</view>
    <view class="header-actions">
-    <button class="header-btn" bindtap="newConversation" disabled="{{busy || connecting}}" aria-label="新建对话"><text class="header-icon plus"></text><text>新建对话</text></button>
-    <button class="header-btn" bindtap="showHistory" disabled="{{busy || connecting}}" aria-label="历史"><text class="header-icon clock"></text><text>历史</text></button>
+    <button class="header-btn" bindtap="newConversation" disabled="{{busy || connecting}}" aria-label="新对话">新对话</button>
+    <button class="header-btn" bindtap="showHistory" disabled="{{busy || connecting}}" aria-label="历史">历史</button>
    </view>
   </view>
-  <view class="mode-row">
-   <text wx:if="{{isMock}}" class="mode-tag">模拟模式</text>
-   <text wx:else class="mode-real">真实 AI</text>
-  </view>
+  <view wx:if="{{isMock}}" class="mock-row"><text class="mode-tag">模拟模式</text></view>
   <view wx:if="{{sessionExpired && error}}" class="auth-notice" role="alert"><text class="auth-bar"></text><text class="auth-text">登录已过期</text><button class="auth-retry" bindtap="retry">重试</button></view>
   <view wx:elif="{{error}}" class="notice {{errorKind === 'warning' ? 'warning' : ''}}" role="alert"><text>{{error}}</text><button class="text-button" bindtap="retry">重试</button></view>
-  <view wx:if="{{contextLabel}}" class="context"><view class="context-row"><text class="context-title">{{contextLabel}}</text><button class="context-clear" bindtap="newConversation" disabled="{{busy || connecting}}" aria-label="清除上下文">清除</button></view></view>
+  <view wx:if="{{contextLabel}}" class="context"><view class="context-row"><text class="context-title">{{contextLabel}}</text><button class="context-clear" bindtap="newConversation" disabled="{{busy || connecting}}" aria-label="清除上下文">清除</button></view><view class="context-hint">补充现场条件，建议会更准</view></view>
  </view>
+
  <scroll-view scroll-y class="message-scroll" scroll-into-view="{{scrollTarget}}" scroll-with-animation="{{false}}">
   <view class="messages" style="padding-bottom:{{composerHeight}}px;">
    <view wx:if="{{connecting}}" class="loading" aria-label="正在加载对话"><view class="skeleton"></view><view class="skeleton short"></view><view class="skeleton"></view></view>
    <view wx:elif="{{conversation && !conversation.messages.length && !partial}}" class="empty">
-    <image class="empty-mark" src="/assets/brand.png" mode="aspectFit" aria-label="聚梦传媒" />
+    <image class="empty-mark" src="/assets/jumeng-avatar.png" mode="aspectFit" aria-label="聚梦传媒" />
     <view class="empty-title">把现场说清楚</view>
-    <view class="empty-desc">告诉我户型、光线、参与人数，一起调整适合这次现场的拍法。</view>
    </view>
    <view wx:for="{{conversation.messages}}" wx:key="index" class="message {{item.role}}">
-    <view wx:if="{{item.role === 'assistant'}}" class="message-label"><text>聚梦AI</text><text class="ai-badge">内容由AI生成</text></view>
+    <view wx:if="{{item.role === 'assistant'}}" class="message-label">聚梦AI</view>
     <text selectable class="message-text">{{item.content}}</text>
-    <view wx:if="{{item.role === 'assistant'}}" class="message-actions"><button class="message-action" data-index="{{index}}" bindtap="copy">复制</button></view>
+    <view wx:if="{{item.role === 'assistant'}}" class="message-foot">
+     <text class="message-hint">AI建议请结合现场核对</text>
+     <view class="message-actions"><button class="message-action" data-index="{{index}}" bindtap="copy">复制</button><button class="message-action" data-index="{{index}}" bindtap="retryMessage">重试</button></view>
+    </view>
    </view>
-   <view wx:if="{{partial}}" class="message assistant"><view class="message-label"><text>聚梦AI</text><text class="ai-badge">内容由AI生成</text></view><text selectable class="message-text">{{partial}}</text><view class="message-actions"><button class="message-action" data-partial="{{true}}" bindtap="copy">复制当前结果</button></view></view>
+   <view wx:if="{{partial}}" class="message assistant"><view class="message-label">聚梦AI</view><text selectable class="message-text">{{partial}}</text><view class="message-foot"><text class="message-hint">AI建议请结合现场核对</text><view class="message-actions"><button class="message-action" data-partial="{{true}}" bindtap="copy">复制</button></view></view></view>
    <view class="generation-state {{busy ? 'active' : ''}}" aria-live="polite"><text wx:if="{{busy}}" class="status-dot"></text>{{status}}<button wx:if="{{!busy && canRegenerate}}" class="message-action" bindtap="regenerate">重新生成</button></view>
    <view id="messages-end" class="messages-end"></view>
   </view>
  </scroll-view>
+
  <view class="composer" style="bottom:calc({{keyboardHeight}}px + var(--tabbar-height) + env(safe-area-inset-bottom));" bind:transitionend="composerSettled">
-  <scroll-view scroll-x class="examples-scroll" show-scrollbar="{{false}}"><view class="examples"><button wx:for="{{examples}}" wx:key="label" data-text="{{item.text}}" bindtap="example" disabled="{{busy || connecting}}" class="example-pill">{{item.label}}</button></view></scroll-view>
+  <view class="examples">
+   <view wx:for="{{examples}}" wx:key="*this" class="example-line" data-text="{{item}}" bindtap="example" role="button" aria-label="{{item}}">{{item}}</view>
+  </view>
   <view class="composer-box">
-   <textarea class="composer-input" value="{{input}}" bindinput="input" bindfocus="inputFocus" bindkeyboardheightchange="keyboardChange" bindblur="inputBlur" maxlength="4000" auto-height placeholder="补充现场情况，或直接提问" placeholder-class="input-placeholder" disabled="{{busy || connecting}}" adjust-position="{{false}}" cursor-spacing="24" hold-keyboard="{{true}}" show-confirm-bar="{{false}}" />
+   <textarea class="composer-input" value="{{input}}" bindinput="input" bindfocus="inputFocus" bindkeyboardheightchange="keyboardChange" bindblur="inputBlur" maxlength="4000" auto-height placeholder="补充现场情况" placeholder-class="input-placeholder" disabled="{{busy || connecting}}" adjust-position="{{false}}" cursor-spacing="24" hold-keyboard="{{true}}" show-confirm-bar="{{false}}" />
    <view wx:if="{{busy}}" class="send-btn" bindtap="stop" aria-label="停止"><view class="send-icon stop-icon"></view></view>
    <view wx:elif="{{!input || !conversation || connecting}}" class="send-btn disabled" aria-label="发送"><view class="send-icon arrow-icon"></view></view>
    <view wx:else class="send-btn" bindtap="send" aria-label="发送"><view class="send-icon arrow-icon"></view></view>
   </view>
-  <view class="composer-hint">内容由AI生成，仅供参考，请结合现场实际核对</view>
  </view>
+
  <view wx:if="{{historyOpen}}" class="history-mask" bindtap="closeHistory" aria-label="关闭历史"></view>
  <view wx:if="{{historyOpen}}" class="history-sheet" role="dialog" aria-label="历史对话"><view class="history-heading"><view class="subtitle">历史对话</view><button class="text-button" bindtap="closeHistory">关闭</button></view><scroll-view scroll-y class="history-scroll"><view wx:if="{{!history.length}}" class="muted">暂无历史对话</view><view wx:for="{{historyGroups}}" wx:key="label" wx:for-item="group"><view class="history-date help">{{group.label}}</view><button wx:for="{{group.items}}" wx:key="id" data-id="{{item.id}}" class="history-item" bindtap="selectHistory"><text class="history-title">{{item.title}}</text><text class="help">{{item.timeLabel}}</text></button></view></scroll-view></view>
 </view>
