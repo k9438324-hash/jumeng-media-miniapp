@@ -1,0 +1,2 @@
+# Keep distributed skill files identical on Windows, macOS and Linux.
+skills/** text eol=lf
