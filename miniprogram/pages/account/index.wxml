@@ -1,0 +1,25 @@
+<view class="account-page">
+ <view class="brand-heading"><brand-menu items="{{menuItems}}" busy="{{loading}}" bind:command="menuCommand" /></view>
+ <view class="title">会员与使用</view>
+ <view class="muted">查看 AI 权益和调用记录</view>
+ <button wx:if="{{!account}}" class="account-refresh" bindtap="refresh" disabled="{{loading}}">{{loading ? '正在查询…' : '登录并查看'}}</button>
+ <view wx:if="{{error}}" class="notice" role="alert">{{error}}</view>
+ <block wx:if="{{account}}">
+  <view class="mode">{{modeLabel}}</view>
+  <view class="membership">
+   <view class="member-status">{{statusLabel}}</view>
+   <view class="subtitle">{{account.membership ? account.membership.label : 'AI 会员'}}</view>
+   <view wx:if="{{account.membership}}" class="muted">有效至 {{expiresLabel}}（北京时间）</view>
+   <view wx:else class="muted">请联系课程老师开通 AI 权益</view>
+   <view class="usage-row"><text>套餐剩余</text><text>{{account.remaining}} 次</text></view>
+   <view class="usage-row"><text>本期已用</text><text>{{account.membership ? account.membership.used : 0}} 次</text></view>
+   <view class="usage-row"><text>今日已用 / 每日上限</text><text>{{account.todayUsed}} / {{account.dailyLimit}} 次</text></view>
+  </view>
+  <view class="help">一次新请求扣 1 次；失败或主动停止仍计次，重新生成另计。网络恢复时同一请求不重复扣次。以上为调用次数，不是 token 或人民币账单。</view>
+  <view wx:if="{{account.status !== 'active'}}" class="notice">{{account.status === 'expired' ? 'AI 权益已到期' : account.status === 'exhausted' ? '套餐额度已用完' : '尚未开通 AI 权益'}}，请联系课程老师处理。历史回答仍可查看。</view>
+  <view class="subtitle records-title">最近使用记录</view>
+  <view class="help">最近 50 条，时间为北京时间；旧版本未记入流水的调用不在此列表。</view>
+  <view wx:if="{{!records.length}}" class="empty-records muted">暂无使用记录</view>
+  <view wx:for="{{records}}" wx:key="id" class="record"><view>{{item.time}} · {{item.mode}}</view><view class="muted">{{item.status}} · 消耗 {{item.charged}} 次</view></view>
+ </block>
+</view>

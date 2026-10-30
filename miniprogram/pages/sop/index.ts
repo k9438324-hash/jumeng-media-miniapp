@@ -1,7 +1,7 @@
-import source from '../../data/course';
+import { course as source, refreshCourse } from '../../services/course';
 import { Lesson, Shot, boundedIndex, mediaUrl, normalizeProgress, Progress } from '../../domain';
 import { config } from '../../config';
-const lessons = source.lessons as Lesson[];
+let lessons = source.lessons as Lesson[];
 
 // 分类显示名映射表：只改展示层，内部 category key 与数据结构不变。
 const categoryLabels: Record<string, string> = {
@@ -19,7 +19,8 @@ function displayTask(task: string): string { return task.replace(/^让人看懂[
 
 type CaseItem = Lesson & { displayTask: string; isNew: boolean; readShotIndex: number; hasProgress: boolean };
 function toCases(lessonIds: number[]): CaseItem[] {
-  return lessons.filter(l => lessonIds.includes(l.id)).map(l => {
+  // 新课程按导入数据的追加顺序置前，不把 id 当成时间。
+  return lessons.filter(l => lessonIds.includes(l.id)).slice().reverse().map(l => {
     const raw = wx.getStorageSync('jumeng:progress:' + l.id) as Partial<Progress> | undefined;
     const progress = normalizeProgress(raw, l.shots.length);
     return {
@@ -34,18 +35,47 @@ function toCases(lessonIds: number[]): CaseItem[] {
 
 Page({
   data: {
-    categories: source.categories.map(c => ({ ...c, name: categoryLabels[c.id] || c.name })),
+    menuItems: [{ label: '返回目录', action: 'catalog' }, { label: '刷新课程', action: 'refresh' }, { label: '隐私说明', action: 'privacy' }],
+    courseNotice: '',
+    categories: source.categories.slice().sort((a,b) => categoryOrder.indexOf(a.id) - categoryOrder.indexOf(b.id)).map(c => ({ ...c, name: categoryLabels[c.id] || c.name })),
     categoryId: source.categories[0].id,
     cases: toCases(source.categories[0].lessonIds),
     caseCount: 0,
     showSearch: false,
+    searchOpen: false, searchQuery: '',
+    visibleCases: [] as CaseItem[],
     lesson: null as Lesson | null, shot: null as Shot | null, shotIndex: 0,
     videoSrc: '', poster: '', initialTime: 0, full: false, mediaError: '',
     progressMap: {} as Record<number, boolean>,
     privacyOpen: false,
   },
   currentTime: 0,
-  onShow() { this.refreshProgress(); this.syncTabBar(0); },
+  courseEpoch: 0,
+  menuCommand(e: WechatMiniprogram.CustomEvent<{ action: string }>) {
+    if (e.detail.action === 'catalog') this.back();
+    if (e.detail.action === 'privacy') this.showPrivacy();
+    if (e.detail.action === 'refresh') void this.loadCourse();
+  },
+  onShow() { this.refreshProgress(); this.syncTabBar(0); void this.loadCourse(); },
+  async loadCourse() {
+    const epoch=++this.courseEpoch;
+    try {
+      await refreshCourse();
+      if(epoch!==this.courseEpoch)return;
+      lessons=source.lessons;
+      const categoryId=source.categories.some(c=>c.id===this.data.categoryId)?this.data.categoryId:source.categories[0].id;
+      this.setData({categories:source.categories.map(c=>({...c,name:categoryLabels[c.id] || c.name})),categoryId,courseNotice:''});
+      const current=this.data.lesson;
+      if(current) {
+        const latest=lessons.find(l=>l.id===current.id);
+        if(!latest){this.pauseAndSave();this.setData({lesson:null,shot:null,videoSrc:'',courseNotice:'这条 SOP 已下架'});}
+        else if(JSON.stringify(current)!==JSON.stringify(latest)){this.pauseAndSave();this.setData({lesson:latest});this.showShot(this.data.shotIndex,this.currentTime,this.data.full);}
+      }
+      this.refreshProgress();
+    } catch {
+      if(epoch===this.courseEpoch)this.setData({courseNotice:'暂未连上课程服务，当前显示本机已有内容。可点 Logo 刷新。'});
+    }
+  },
   syncTabBar(index: number) {
     if (typeof this.getTabBar === 'function' && this.getTabBar()) {
       this.getTabBar().setData({ selected: index });
@@ -58,6 +88,7 @@ Page({
     // 刷新当前分类案例（同步“新”标与进度）
     const cat = source.categories.find(c => c.id === this.data.categoryId);
     if (cat) this.setData({ cases: toCases(cat.lessonIds) });
+    this.updateCaseMeta();
   },
   onLoad() {
     const category = source.categories.find(c => c.id === wx.getStorageSync('jumeng:category'));
@@ -66,15 +97,19 @@ Page({
   },
   updateCaseMeta() {
     const cases = this.data.cases as CaseItem[];
-    this.setData({ caseCount: cases.length, showSearch: cases.length > 20 });
+    const query = this.data.searchQuery.trim();
+    this.setData({ caseCount: cases.length, showSearch: cases.length > 20,
+      visibleCases: cases.filter(c => !query || (c.name + c.displayTask).includes(query)) });
   },
-  onHide() { this.pauseAndSave(); },
-  onUnload() { this.pauseAndSave(); },
+  toggleSearch() { this.setData({ searchOpen: !this.data.searchOpen, searchQuery: '' }); this.updateCaseMeta(); },
+  search(e: WechatMiniprogram.CustomEvent<{ value: string }>) { this.setData({ searchQuery: e.detail.value }); this.updateCaseMeta(); },
+  onHide() { this.courseEpoch++; this.pauseAndSave(); },
+  onUnload() { this.courseEpoch++; this.pauseAndSave(); },
   selectCategory(e: WechatMiniprogram.TouchEvent) {
     this.pauseAndSave();
     const category = source.categories.find(c => c.id === e.currentTarget.dataset.id)!;
     wx.setStorageSync('jumeng:category', category.id);
-    this.setData({ categoryId: category.id, cases: toCases(category.lessonIds), lesson: null, shot: null, videoSrc: '' });
+    this.setData({ categoryId: category.id, cases: toCases(category.lessonIds), lesson: null, shot: null, videoSrc: '', searchOpen: false, searchQuery: '' });
     this.updateCaseMeta();
   },
   openCase(e: WechatMiniprogram.TouchEvent) {

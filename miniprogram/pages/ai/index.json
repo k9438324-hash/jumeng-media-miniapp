@@ -1,1 +1,6 @@
-{"navigationBarTitleText":"聚梦传媒 · 聚梦AI"}
+{
+  "navigationBarTitleText": "",
+  "usingComponents": {
+    "brand-menu": "/components/brand-menu/index"
+  }
+}

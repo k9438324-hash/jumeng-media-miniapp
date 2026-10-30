@@ -1,0 +1,9 @@
+.account-page { padding:40rpx 40rpx calc(40rpx + var(--tabbar-height) + env(safe-area-inset-bottom)); }
+.account-refresh { margin:32rpx 0;min-height:88rpx;background:var(--ink);color:var(--bg);border-radius:var(--radius-panel); }
+.mode,.help { font-size:24rpx;line-height:1.65;color:var(--ink-2); }
+.membership { padding:32rpx 0;margin:16rpx 0 24rpx;border-top:1px solid var(--line);border-bottom:1px solid var(--line); }
+.member-status { font-size:26rpx;color:var(--ink-2);margin-bottom:16rpx; }
+.usage-row { display:flex;justify-content:space-between;gap:24rpx;flex-wrap:wrap;margin-top:24rpx;font-size:28rpx; }
+.records-title { margin:40rpx 0 16rpx; }
+.record { padding:24rpx 0;border-bottom:1px solid var(--line);font-size:28rpx;line-height:1.65; }
+.empty-records { padding:32rpx 0; }

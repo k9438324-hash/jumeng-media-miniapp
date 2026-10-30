@@ -56,12 +56,12 @@
       "name": "进门看厨房",
       "task": "让人看懂：这家厨房哪里不方便，准备怎么改。",
       "need": "一间还没改的厨房、一位愿意讲情况的业主、一位会量房的IP、一把卷尺。",
-      "takeaway": "先让业主讲生活，再让IP讲办法。",
+      "takeaway": "先听住在这里的人说哪里不好用，再看清问题、量好地方，最后一起确认怎么改。",
       "file": "videos/13437715451966486.mp4",
       "duration": 160.266667,
       "shots": [
         {
-          "title": "先拍“今天来干什么”",
+          "title": "先让人知道你来做什么",
           "where": "站在院门口，离IP约2米。",
           "frame": "手机竖着，IP从头到膝盖都在画面里，背后看得见房子。",
           "action": "你按录像。IP看着镜头说一句话。",
@@ -73,10 +73,11 @@
           "keep": 5,
           "clip": "clips/bb241dc6a8710a7a.mp4",
           "clipPoster": "clips/bb241dc6a8710a7a.jpg",
-          "image": "assets/v1-1.jpg"
+          "image": "assets/v1-1.jpg",
+          "logic": "先说今天来解决什么事，观众才知道接下来该看什么。"
         },
         {
-          "title": "问清楚“平时谁做饭”",
+          "title": "先听平时用厨房的人说",
           "where": "进厨房，站在两人斜前方约2米。",
           "frame": "IP和业主都拍进去。背后能看到厨房。",
           "action": "按录像，IP问；业主自由回答。不要替业主编答案。",
@@ -88,10 +89,11 @@
           "keep": 10,
           "clip": "clips/239af6d1960dcf29.mp4",
           "clipPoster": "clips/239af6d1960dcf29.jpg",
-          "image": "assets/v1-2.jpg"
+          "image": "assets/v1-2.jpg",
+          "logic": "谁天天在这里做饭，谁最清楚哪里不好用。先听他说，不要急着给答案。"
         },
         {
-          "title": "把不方便的地方拍清楚",
+          "title": "把不好用的地方指给人看",
           "where": "站在业主刚才指的地方前面，离它约1米。",
           "frame": "让问题位置占大半画面；需要时把手指拍进去。",
           "action": "按录像。请业主指着这个位置，说具体影响。",
@@ -103,10 +105,11 @@
           "keep": 8,
           "clip": "clips/d50aefebb9952c07.mp4",
           "clipPoster": "clips/d50aefebb9952c07.jpg",
-          "image": "assets/v1-3.jpg"
+          "image": "assets/v1-3.jpg",
+          "logic": "只说“不方便”，别人想不出来。让人指着具体地方说，大家才明白问题在哪。"
         },
         {
-          "title": "拍IP量这一处",
+          "title": "先量清楚，再决定怎么改",
           "where": "站在量尺位置侧面约1米，别挡住尺子。",
           "frame": "把尺子的两端、数字和IP的手尽量一起拍进去。",
           "action": "先让IP把尺子摆好。按录像，再请他报尺寸并说用途。",
@@ -118,10 +121,11 @@
           "keep": 8,
           "clip": "clips/e18d9b094f6dbf7c.mp4",
           "clipPoster": "clips/e18d9b094f6dbf7c.jpg",
-          "image": "assets/v1-4.jpg"
+          "image": "assets/v1-4.jpg",
+          "logic": "地方有多大，要量过才知道。不能凭感觉说这里放得下。"
         },
         {
-          "title": "拍IP说“这里怎么改”",
+          "title": "把问题和改法放在一起讲",
           "where": "退回门口，站到能看见主要位置的地方。",
           "frame": "拍IP和他指的两个位置；不要只拍脸。",
           "action": "按录像。IP先指旧问题，再指准备调整的位置。",
@@ -133,10 +137,11 @@
           "keep": 12,
           "clip": "clips/fab102a0ce4f497a.mp4",
           "clipPoster": "clips/fab102a0ce4f497a.jpg",
-          "image": "assets/v1-5.jpg"
+          "image": "assets/v1-5.jpg",
+          "logic": "先指哪里不好用，再说准备怎么改，别人就能听懂为什么要花力气改。"
         },
         {
-          "title": "最后问一次“是不是这个意思”",
+          "title": "再问一句，确认没有听错",
           "where": "站在两人侧前方约2米。",
           "frame": "两人都在画面里，镜头尽量不移动。",
           "action": "按录像。IP复述需求，问业主还有没有漏掉的事。",
@@ -148,21 +153,22 @@
           "keep": 7,
           "clip": "clips/fb454ae71fd48860.mp4",
           "clipPoster": "clips/fb454ae71fd48860.jpg",
-          "image": "assets/v1-6.jpg"
+          "image": "assets/v1-6.jpg",
+          "logic": "把听到的话说回去，让业主改正或补充，免得你想改的和他想要的不一样。"
         }
       ]
     },
     {
       "id": 2,
-      "name": "做一顿饭验收",
+      "name": "做顿饭，看看厨房好不好用",
       "task": "让人看懂：新厨房被真实用起来是什么样。",
       "need": "已完工厨房、愿意参加的业主、会做饭的人、一道普通家常菜的食材。不会做饭就请业主操作。",
-      "takeaway": "饭可以简单，但每个使用动作要是真的。",
+      "takeaway": "厨房好不好用，做一顿普通饭就能看出来。先说要试什么，再拍怎么做、做成什么样，最后听用的人说感受。",
       "file": "videos/13437715659752140.mp4",
       "duration": 163.733333,
       "shots": [
         {
-          "title": "拿着食材，说清来意",
+          "title": "先说今天要试什么",
           "where": "站在房门外，离做饭的人约2米。",
           "frame": "人和手里的菜都拍进去，不要把菜挡在画面外。",
           "action": "按录像，请他说今天来做什么。",
@@ -174,10 +180,11 @@
           "keep": 5,
           "clip": "clips/cc0a736200f2751b.mp4",
           "clipPoster": "clips/cc0a736200f2751b.jpg",
-          "image": "assets/v2-1.jpg"
+          "image": "assets/v2-1.jpg",
+          "logic": "不用做大餐。说清楚今天用这个厨房做顿饭，大家就知道你是在试它好不好用。"
         },
         {
-          "title": "进门和业主打个招呼",
+          "title": "让人知道谁在一起做这件事",
           "where": "提前站到厨房里，镜头朝门口。",
           "frame": "拍到人进门、业主和厨房的一部分。",
           "action": "按录像，做饭的人走进来，和业主正常打招呼。",
@@ -189,10 +196,11 @@
           "keep": 7,
           "clip": "clips/a8cc92a1b5992ff6.mp4",
           "clipPoster": "clips/a8cc92a1b5992ff6.jpg",
-          "image": "assets/v2-2.jpg"
+          "image": "assets/v2-2.jpg",
+          "logic": "先打个招呼，让观众分清谁是业主、谁来试用，后面的对话才看得懂。"
         },
         {
-          "title": "只拍一个备菜动作",
+          "title": "从一件小事看顺不顺手",
           "where": "站在水盆或案板斜前方约1米。",
           "frame": "只拍手、食材和正在用的水盆或案板。",
           "action": "按录像，让做饭的人正常洗菜或切菜。一次只拍一个动作。",
@@ -204,10 +212,11 @@
           "keep": 8,
           "clip": "clips/559252c9ff507e5b.mp4",
           "clipPoster": "clips/559252c9ff507e5b.jpg",
-          "image": "assets/v2-3.jpg"
+          "image": "assets/v2-3.jpg",
+          "logic": "洗菜或切菜都行。把一个动作拍清楚，比一口气说很多优点更容易懂。"
         },
         {
-          "title": "拍同一道菜从下锅到出锅",
+          "title": "把一件事从开始拍到做完",
           "where": "站在锅侧前方约1.5米，不挡操作的人。",
           "frame": "锅和操作的手一起拍进来。",
           "action": "先拍下锅10秒，停；再拍翻炒10秒，停；菜熟后拍出锅10秒。三个文件都留下。",
@@ -219,10 +228,11 @@
           "keep": 20,
           "clip": "clips/c4a5b866bbb45da6.mp4",
           "clipPoster": "clips/c4a5b866bbb45da6.jpg",
-          "image": "assets/v2-4.jpg"
+          "image": "assets/v2-4.jpg",
+          "logic": "同一道菜从下锅到出锅都拍到，别人才能看懂它是怎么做出来的。"
         },
         {
-          "title": "拍菜端到桌上",
+          "title": "把做好的结果给人看",
           "where": "站在餐桌侧面约1米。",
           "frame": "桌面和端菜的双手都在画面里。",
           "action": "先按录像，再请人把菜放到桌上。放好以后镜头别马上挪开。",
@@ -234,10 +244,11 @@
           "keep": 8,
           "clip": "clips/b0f08d1084c55366.mp4",
           "clipPoster": "clips/b0f08d1084c55366.jpg",
-          "image": "assets/v2-5.jpg"
+          "image": "assets/v2-5.jpg",
+          "logic": "前面拍了怎么做，最后把做好的饭菜给人看，这件事才讲完整。"
         },
         {
-          "title": "让业主说一个使用感受",
+          "title": "让真正用过的人说感受",
           "where": "站在餐桌旁，离说话的人约1米。",
           "frame": "拍正在回答的人；别只拍菜。",
           "action": "按录像，先让人尝一口，再问一句。",
@@ -249,7 +260,8 @@
           "keep": 12,
           "clip": "clips/4de6e35810a288f8.mp4",
           "clipPoster": "clips/4de6e35810a288f8.jpg",
-          "image": "assets/v2-6.jpg"
+          "image": "assets/v2-6.jpg",
+          "logic": "问哪里顺手、哪里不好用，不要只让业主夸。真实感受才对下一个使用者有用。"
         }
       ]
     },
@@ -258,12 +270,12 @@
       "name": "现场试一次",
       "task": "让人看懂：这个灶好看，也能看到一次真实操作。",
       "need": "已做好的灶、会操作它的IP、能正常演示的现场。你只录像，由IP操作。",
-      "takeaway": "先问“用起来怎样”，接着就给人看。",
+      "takeaway": "想知道东西好不好用，就真的试一次：先看清是什么，再看怎么用，最后看结果。",
       "file": "videos/13437715738423785.mp4",
       "duration": 54.635011,
       "shots": [
         {
-          "title": "站在门口，把厨房拍全",
+          "title": "先看清这是什么地方",
           "where": "站在厨房门口；太近就往后退一步。",
           "frame": "手机竖着，灶台、水盆和地面尽量一起拍到。",
           "action": "按录像，双手拿稳手机，不走路，不转圈。",
@@ -275,10 +287,11 @@
           "keep": 5,
           "clip": "clips/17124ba609330548.mp4",
           "clipPoster": "clips/17124ba609330548.jpg",
-          "image": "assets/v3-1.jpg"
+          "image": "assets/v3-1.jpg",
+          "logic": "先给一眼整个厨房，观众才知道后面的动作发生在哪里。"
         },
         {
-          "title": "让IP说“现在试一下”",
+          "title": "告诉大家接下来试什么",
           "where": "站在灶台斜前方约2米。",
           "frame": "IP从头到膝盖和灶台一起入画。",
           "action": "按录像。IP先看镜头，说完再看向灶台。",
@@ -290,10 +303,11 @@
           "keep": 5,
           "clip": "clips/0eef01e97b665089.mp4",
           "clipPoster": "clips/0eef01e97b665089.jpg",
-          "image": "assets/v3-2.jpg"
+          "image": "assets/v3-2.jpg",
+          "logic": "先说要试哪一个功能，别人才能带着这个问题往下看。"
         },
         {
-          "title": "从操作前开始一直拍",
+          "title": "把怎么用的过程拍完整",
           "where": "站在灶台斜前方约1.5米，听IP安排位置。",
           "frame": "操作的手、灶口和周围环境都拍到，别只拍脸。",
           "action": "先按录像，再告诉IP可以开始。保持手机不动，把开始到出现结果连续拍下来。",
@@ -305,10 +319,11 @@
           "keep": 18,
           "clip": "clips/bb335413250e6cee.mp4",
           "clipPoster": "clips/bb335413250e6cee.jpg",
-          "image": "assets/v3-3.jpg"
+          "image": "assets/v3-3.jpg",
+          "logic": "从动手前拍到做完，别只挑最好看的一小段，大家才看得懂整个过程。"
         },
         {
-          "title": "靠近一点，只拍结果",
+          "title": "让人看清试出来的结果",
           "where": "等IP说可以靠近，再站到结果旁约1米处。",
           "frame": "让观众要看的位置占大半画面。",
           "action": "按录像，手机不动；不把手伸进画面触碰设备。",
@@ -320,10 +335,11 @@
           "keep": 10,
           "clip": "clips/2d25d1446e61f938.mp4",
           "clipPoster": "clips/2d25d1446e61f938.jpg",
-          "image": "assets/v3-4.jpg"
+          "image": "assets/v3-4.jpg",
+          "logic": "靠近拍已经发生的变化，让观众自己看。没有看到的效果不要替它说。"
         },
         {
-          "title": "水盆和台面，各拍一次",
+          "title": "一次只看清一个地方",
           "where": "先站水盆前约1米；拍完再换到台面前。",
           "frame": "第一遍拍水盆，第二遍拍台面收口，不要来回扫。",
           "action": "水盆拍8秒，停；台面拍8秒，停。每次双手拿稳。",
@@ -335,10 +351,11 @@
           "keep": 12,
           "clip": "clips/3c66f572b02fac0d.mp4",
           "clipPoster": "clips/3c66f572b02fac0d.jpg",
-          "image": "assets/v3-5.jpg"
+          "image": "assets/v3-5.jpg",
+          "logic": "水盆、台面分开拍，每一处拍清楚做什么用，比扫一圈更好懂。"
         },
         {
-          "title": "回到门口，说清进度",
+          "title": "说清做完了什么，还差什么",
           "where": "回到第1步站过的门口位置。",
           "frame": "拍整间厨房，也让IP站在画面一侧。",
           "action": "按录像，IP说现在完成到哪一步。",
@@ -350,7 +367,8 @@
           "keep": 5,
           "clip": "clips/363a8ff4349851ad.mp4",
           "clipPoster": "clips/363a8ff4349851ad.jpg",
-          "image": "assets/v3-6.jpg"
+          "image": "assets/v3-6.jpg",
+          "logic": "最后交代哪些已经做好、哪些还没做，别让人把半成品当成全部完成。"
         }
       ]
     },
@@ -359,12 +377,12 @@
       "name": "改前改后对着看",
       "task": "让人看懂：三处旧问题，分别怎么变好了。",
       "need": "同一个项目的改前照片或视频、完工现场、愿意回答的业主。没有改前资料，改拍第3种“现场试一次”。",
-      "takeaway": "先给旧的，再给新的；一次只讲一处。",
+      "takeaway": "想说明改得怎么样，就让同一个地方的旧样子和新样子对着看，再说这对生活有什么用。",
       "file": "videos/13437715797087639.mp4",
       "duration": 72.444807,
       "shots": [
         {
-          "title": "先拍完工的整间厨房",
+          "title": "先让人看见现在的样子",
           "where": "站在厨房门口，能往后退就稍微退一点。",
           "frame": "灶、水盆和柜子尽量都拍进去。",
           "action": "按录像，手机拿稳，先不走动。",
@@ -376,10 +394,11 @@
           "keep": 5,
           "clip": "clips/711e59c5731e1a55.mp4",
           "clipPoster": "clips/711e59c5731e1a55.jpg",
-          "image": "assets/v4-1.jpg"
+          "image": "assets/v4-1.jpg",
+          "logic": "先看整个厨房，让观众有个大概印象，再慢慢看哪里变了。"
         },
         {
-          "title": "对着旧照片，补拍新灶台",
+          "title": "同一个地方，改前改后对着看",
           "where": "先打开旧灶照片看一眼，再站到原来拍照的位置。",
           "frame": "新灶在画面里的大小和方向，尽量像旧照片。",
           "action": "按录像，先静止拍5秒，再请IP指着说变化。",
@@ -391,10 +410,11 @@
           "keep": 12,
           "clip": "clips/1b918db3529b84f3.mp4",
           "clipPoster": "clips/1b918db3529b84f3.jpg",
-          "image": "assets/v4-2.jpg"
+          "image": "assets/v4-2.jpg",
+          "logic": "旧灶台和新灶台要对得上，别人才能看懂到底改了什么。"
         },
         {
-          "title": "对着旧照片，补拍新水盆",
+          "title": "说清变化带来了什么方便",
           "where": "到旧水盆照片的拍摄位置，离新水盆约1米。",
           "frame": "拍到水盆和台面，保持和旧照相近角度。",
           "action": "按录像，让IP接一次水或演示一个清理动作。",
@@ -406,10 +426,11 @@
           "keep": 12,
           "clip": "clips/b41c97019619e359.mp4",
           "clipPoster": "clips/b41c97019619e359.jpg",
-          "image": "assets/v4-3.jpg"
+          "image": "assets/v4-3.jpg",
+          "logic": "不只说水盆换了样子，还要用一个动作说明现在用起来有什么不同。"
         },
         {
-          "title": "把柜子打开给人看",
+          "title": "打开看看，别只看外面",
           "where": "站在柜子斜前方约1米，给柜门留出打开空间。",
           "frame": "柜门、里面的空间和IP的手都拍到。",
           "action": "先按录像，再让IP完整打开一次柜门或拉篮。",
@@ -421,10 +442,11 @@
           "keep": 12,
           "clip": "clips/c3065f43e681e597.mp4",
           "clipPoster": "clips/c3065f43e681e597.jpg",
-          "image": "assets/v4-4.jpg"
+          "image": "assets/v4-4.jpg",
+          "logic": "柜子外面好看不代表里面好用。打开给人看，才能看清里面怎么放东西。"
         },
         {
-          "title": "回到门口，再拍一遍整体",
+          "title": "看完小地方，再回来看整体",
           "where": "回到第1步的位置，尽量不换角度。",
           "frame": "整间厨房都拍到，镜头里暂时不要有人来回走。",
           "action": "按录像，双手拿稳；拍一段安静的整体画面。",
@@ -436,10 +458,11 @@
           "keep": 6,
           "clip": "clips/4ef766ae5b71cc22.mp4",
           "clipPoster": "clips/4ef766ae5b71cc22.jpg",
-          "image": "assets/v4-5.jpg"
+          "image": "assets/v4-5.jpg",
+          "logic": "把细节看完，再看整个厨房，观众才知道这些变化放在一起是什么样。"
         },
         {
-          "title": "问业主最明显的变化",
+          "title": "听听住在这里的人怎么说",
           "where": "站在业主斜前方约1米。",
           "frame": "拍到业主上半身，背后能看见新厨房。",
           "action": "按录像，问完后保持安静，让业主自己说。",
@@ -451,21 +474,22 @@
           "keep": 10,
           "clip": "clips/41fd8624e8fe4559.mp4",
           "clipPoster": "clips/41fd8624e8fe4559.jpg",
-          "image": "assets/v4-6.jpg"
+          "image": "assets/v4-6.jpg",
+          "logic": "让业主说最明显的一处变化，比替他总结“都很好”更具体。"
         }
       ]
     },
     {
       "id": 5,
-      "name": "用几天，再回访",
+      "name": "用几天，再回来问问",
       "task": "让人看懂：住户用了几天后，实际感受怎样。",
       "need": "已经实际用过的厨房、愿意回访的使用者、同项目的旧照片。先问清实际用了多久。",
-      "takeaway": "问“哪里顺手、哪里不便”，比反复问满意更有内容。",
+      "takeaway": "刚装好和用了几天，感受可能不一样。回来看看平时怎么用，问清哪里方便、哪里还要改。",
       "file": "videos/13437715874423385.mp4",
       "duration": 94.733333,
       "shots": [
         {
-          "title": "先录一句自然聊天",
+          "title": "先像平时一样聊两句",
           "where": "站在两人旁边约1.5米，不把手机贴到脸前。",
           "frame": "两人从头到腰在画面里，保留厨房背景。",
           "action": "按录像，聊今天正在做的一件小事。没有好片段就不用硬凑。",
@@ -477,10 +501,11 @@
           "keep": 4,
           "clip": "clips/dd3ff0ae1f6bfc88.mp4",
           "clipPoster": "clips/dd3ff0ae1f6bfc88.jpg",
-          "image": "assets/v5-1.jpg"
+          "image": "assets/v5-1.jpg",
+          "logic": "自然聊聊，让大家知道这是一次真实见面，不用硬编热闹的开场。"
         },
         {
-          "title": "说清楚今天回来干什么",
+          "title": "说清为什么还要回来看看",
           "where": "站在门口，离IP约2米。",
           "frame": "IP和厨房一起入画。",
           "action": "按录像，请IP说一句回访来意。",
@@ -492,10 +517,11 @@
           "keep": 6,
           "clip": "clips/5e3e30e02fe43336.mp4",
           "clipPoster": "clips/5e3e30e02fe43336.jpg",
-          "image": "assets/v5-2.jpg"
+          "image": "assets/v5-2.jpg",
+          "logic": "装好以后还回来，是想知道用着怎么样，不是再拍一次新厨房有多漂亮。"
         },
         {
-          "title": "让使用者做一个平时动作",
+          "title": "看看平时到底怎么用",
           "where": "站在使用位置侧面约1米，不挡操作。",
           "frame": "手、物品和正在用的设备一起拍进去。",
           "action": "先按录像，再请业主做一次正常接水、开柜或做饭动作。",
@@ -507,10 +533,11 @@
           "keep": 14,
           "clip": "clips/0dcae27ff6c67d50.mp4",
           "clipPoster": "clips/0dcae27ff6c67d50.jpg",
-          "image": "assets/v5-3.jpg"
+          "image": "assets/v5-3.jpg",
+          "logic": "让业主做一个平时会做的动作，才知道东西在真实生活里好不好用。"
         },
         {
-          "title": "拿旧照片找同一个位置",
+          "title": "找同一个地方看变化",
           "where": "先看旧照片，再站到相同方向拍现在的样子。",
           "frame": "选照片里能认出的窗、墙角或门，作为共同位置。",
           "action": "按录像，静止拍8秒。旧照片留着，剪辑时先放旧、再放新。",
@@ -522,10 +549,11 @@
           "keep": 12,
           "clip": "clips/2e716d7cf06d8584.mp4",
           "clipPoster": "clips/2e716d7cf06d8584.jpg",
-          "image": "assets/v5-4.jpg"
+          "image": "assets/v5-4.jpg",
+          "logic": "新旧画面对准同一处，别人不用猜，就能看出前后哪里不一样。"
         },
         {
-          "title": "请IP指两处主要改动",
+          "title": "把改了什么和为什么连起来说",
           "where": "站在能同时看见两处改动的位置。",
           "frame": "拍到IP的手和他说的地方。",
           "action": "第1处按录像拍完后停；换位置再单独录第2处。",
@@ -537,10 +565,11 @@
           "keep": 14,
           "clip": "clips/0502f7d2caa22c8e.mp4",
           "clipPoster": "clips/0502f7d2caa22c8e.jpg",
-          "image": "assets/v5-5.jpg"
+          "image": "assets/v5-5.jpg",
+          "logic": "每说一处改动，都说清它想解决哪个麻烦，别只念换了哪些东西。"
         },
         {
-          "title": "最后只问一次真实体验",
+          "title": "好用的和不好用的都要听",
           "where": "站在使用者旁边约1米，手机对着他的上半身。",
           "frame": "脸和一点厨房背景都拍到，别把窗户强光放在脸后面。",
           "action": "按录像，一口气问完，然后认真等回答。",
@@ -552,21 +581,22 @@
           "keep": 10,
           "clip": "clips/b692ca6e9c711c8b.mp4",
           "clipPoster": "clips/b692ca6e9c711c8b.jpg",
-          "image": "assets/v5-6.jpg"
+          "image": "assets/v5-6.jpg",
+          "logic": "问哪里方便、哪里还要调整，别把问题变成只能回答“满意”。"
         }
       ]
     },
     {
       "id": 6,
-      "name": "把开工说清楚",
+      "name": "开工前，把事情说清楚",
       "task": "让人看懂：今天改哪里，先做什么，下一步是什么。",
       "need": "真实开工现场、负责的IP、业主、已确认的施工安排。不为拍摄额外拆东西。",
-      "takeaway": "仪式拍一小段，重点给“改哪里”和“怎么做”。",
+      "takeaway": "开工先把四件事说清楚：改哪里、先做什么、谁来确认、什么时候再看。",
       "file": "videos/13437715904839366.mp4",
       "duration": 131.433333,
       "shots": [
         {
-          "title": "先说今天在哪里开工",
+          "title": "先让人知道今天开始做什么",
           "where": "站在旧厨房门口，离IP约2米。",
           "frame": "IP和旧厨房同时出现，别只拍红色背景。",
           "action": "按录像，请IP说清今天的任务。",
@@ -578,10 +608,11 @@
           "keep": 5,
           "clip": "clips/eddb553dd3eeb868.mp4",
           "clipPoster": "clips/eddb553dd3eeb868.jpg",
-          "image": "assets/v6-1.jpg"
+          "image": "assets/v6-1.jpg",
+          "logic": "先说在哪个地方开工、准备做什么，别让观众只看到一个仪式。"
         },
         {
-          "title": "拍一个双方确认的动作",
+          "title": "让双方把要做的事确认好",
           "where": "站在业主与IP旁边约1.5米。",
           "frame": "可以拍两人点头确认，或手指着确认单；不拍清个人信息。",
           "action": "按录像，让两人按真实流程核对事项。原本有仪式也只录其中一个动作。",
@@ -593,10 +624,11 @@
           "keep": 7,
           "clip": "clips/4846cdef30f93924.mp4",
           "clipPoster": "clips/4846cdef30f93924.jpg",
-          "image": "assets/v6-2.jpg"
+          "image": "assets/v6-2.jpg",
+          "logic": "两边一起核对，说明事情不是一个人说了算。怎么做，要先说到一起。"
         },
         {
-          "title": "开工前，留一段旧样",
+          "title": "先留下没改之前的样子",
           "where": "站到厨房门口，把手机拿稳。",
           "frame": "地面、墙面、旧灶等主要位置尽量一起拍到。",
           "action": "按录像，静止拍8秒，再换位置分别补旧灶和旧水盆各8秒。",
@@ -608,10 +640,11 @@
           "keep": 8,
           "clip": "clips/bbd4f3858ea1201f.mp4",
           "clipPoster": "clips/bbd4f3858ea1201f.jpg",
-          "image": "assets/v6-3.jpg"
+          "image": "assets/v6-3.jpg",
+          "logic": "旧样子现在不拍，改完就找不回来了。有旧画面，以后才能对着看。"
         },
         {
-          "title": "先指灶，再指水盆",
+          "title": "把要改的位置指清楚",
           "where": "站在IP斜前方约2米，让他说的位置都在画面里。",
           "frame": "人、手指和墙角位置同时出现；放不下就后退。",
           "action": "按录像，IP说一个位置、停一下，再指下一个位置。",
@@ -623,10 +656,11 @@
           "keep": 15,
           "clip": "clips/8f1debc88a8d6150.mp4",
           "clipPoster": "clips/8f1debc88a8d6150.jpg",
-          "image": "assets/v6-4.jpg"
+          "image": "assets/v6-4.jpg",
+          "logic": "说到哪里就指到哪里，让业主和观众都能找到，别只在嘴上说。"
         },
         {
-          "title": "把施工先后说成三句话",
+          "title": "把先后顺序说得听得懂",
           "where": "站在IP前约1米。",
           "frame": "拍上半身；有示意图就把图放在胸前。",
           "action": "按录像，IP按本项目安排，一句一句说先后。",
@@ -638,10 +672,11 @@
           "keep": 15,
           "clip": "clips/2d6880f65c97d09b.mp4",
           "clipPoster": "clips/2d6880f65c97d09b.jpg",
-          "image": "assets/v6-5.jpg"
+          "image": "assets/v6-5.jpg",
+          "logic": "先做什么、再做什么，一件一件讲，大家才知道事情怎么往前走。"
         },
         {
-          "title": "问清下一次确认什么",
+          "title": "把下一件事约清楚",
           "where": "站在两人侧前方约2米。",
           "frame": "业主和IP都拍到。",
           "action": "按录像，请IP说待选事项，再让业主回应。",
@@ -653,21 +688,22 @@
           "keep": 10,
           "clip": "clips/e913289e3cd8641d.mp4",
           "clipPoster": "clips/e913289e3cd8641d.jpg",
-          "image": "assets/v6-6.jpg"
+          "image": "assets/v6-6.jpg",
+          "logic": "结束前说好下一次确认什么、谁来确认、什么时候确认，才不会各等各的。"
         }
       ]
     },
     {
       "id": 7,
-      "name": "试给人看，再讲配置",
+      "name": "好不好用，试给你看",
       "task": "让人看懂：现场这次怎么操作，看到什么结果。",
       "need": "可正常使用的成品、会操作的IP、一个要展示的具体功能。没有邻居围观也照样能拍。",
-      "takeaway": "开头提一个问题，尽快用连续画面回答它。",
+      "takeaway": "先提一个大家关心的问题，再真的做一次给人看，最后说清它能帮人省什么事。",
       "file": "videos/13437715930435285.mp4",
       "duration": 80.966667,
       "shots": [
         {
-          "title": "开头直接说今天看什么",
+          "title": "先说大家要看明白什么",
           "where": "站在成品灶斜前方约2米。",
           "frame": "IP和灶同时出现。",
           "action": "按录像，IP直接说要演示的功能，不编围观故事。",
@@ -679,10 +715,11 @@
           "keep": 5,
           "clip": "clips/a5017357330dc9ed.mp4",
           "clipPoster": "clips/a5017357330dc9ed.jpg",
-          "image": "assets/v7-1.jpg"
+          "image": "assets/v7-1.jpg",
+          "logic": "开头就说今天要试什么，让观众知道这段视频会回答哪个问题。"
         },
         {
-          "title": "先录像，再让IP操作",
+          "title": "真的做一次，不只说它好",
           "where": "站在IP指定的位置，不挡操作。",
           "frame": "拍到操作的手、设备和周围情况。",
           "action": "你先按录像，再说“可以开始”。从操作前一直拍到结果出现。",
@@ -694,10 +731,11 @@
           "keep": 18,
           "clip": "clips/458b40bf18cdfc97.mp4",
           "clipPoster": "clips/458b40bf18cdfc97.jpg",
-          "image": "assets/v7-2.jpg"
+          "image": "assets/v7-2.jpg",
+          "logic": "从开始操作拍到结果，让别人看到你怎么做，而不是只听一句“很好用”。"
         },
         {
-          "title": "把一个正常操作拍近一点",
+          "title": "把关键动作拍清楚",
           "where": "请IP指出可以站的位置，再靠近到约1米。",
           "frame": "只把要展示的操作部位和手拍清楚。",
           "action": "按录像，请IP正常演示一次；不要为了镜头重复危险操作。",
@@ -709,10 +747,11 @@
           "keep": 10,
           "clip": "clips/51452fe18b1342db.mp4",
           "clipPoster": "clips/51452fe18b1342db.jpg",
-          "image": "assets/v7-3.jpg"
+          "image": "assets/v7-3.jpg",
+          "logic": "靠近拍最重要的那一下，让人看懂怎么用。不要为了好看去做危险动作。"
         },
         {
-          "title": "让业主说以前哪里麻烦",
+          "title": "说说原来哪里麻烦",
           "where": "站在业主前约1米。",
           "frame": "拍上半身；如果有真实旧貌，剪辑时再插进去。",
           "action": "按录像，问完后让业主自己回答。",
@@ -724,10 +763,11 @@
           "keep": 8,
           "clip": "clips/4a3c6b279f0f8890.mp4",
           "clipPoster": "clips/4a3c6b279f0f8890.jpg",
-          "image": "assets/v7-4.jpg"
+          "image": "assets/v7-4.jpg",
+          "logic": "先知道以前遇到什么麻烦，才明白现在的改变有什么用。让业主自己说。"
         },
         {
-          "title": "只挑两件配套，各拍一次",
+          "title": "每次只讲一件东西有什么用",
           "where": "先站水盆前约1米，拍完再去柜子前。",
           "frame": "每次只让一件配套占主要画面。",
           "action": "水盆拍8秒，停；柜子打开拍8秒，停。不要整屋扫一圈。",
@@ -739,10 +779,11 @@
           "keep": 12,
           "clip": "clips/b987385cfee0d4f1.mp4",
           "clipPoster": "clips/b987385cfee0d4f1.jpg",
-          "image": "assets/v7-5.jpg"
+          "image": "assets/v7-5.jpg",
+          "logic": "少挑几样，一样一样讲清用途，比一口气念一堆名字更好懂。"
         },
         {
-          "title": "回到做饭这件小事",
+          "title": "回到每天要过的日子",
           "where": "站在业主或使用者旁约1米。",
           "frame": "人和灶一起拍进去。",
           "action": "按录像，用一个日常问题结束。",
@@ -754,21 +795,22 @@
           "keep": 7,
           "clip": "clips/338c4fdee18d3c69.mp4",
           "clipPoster": "clips/338c4fdee18d3c69.jpg",
-          "image": "assets/v7-6.jpg"
+          "image": "assets/v7-6.jpg",
+          "logic": "最后说到平时做饭这件小事：这些东西究竟帮人做什么，不只是摆着好看。"
         }
       ]
     },
     {
       "id": 8,
-      "name": "见客户：先听需求，再约下一步",
+      "name": "先听客户，再把事情说清楚",
       "task": "把客户想改什么、谁来使用、哪些事还没定问清楚，再确认下一步。",
       "need": "愿意交流的客户、负责沟通的人、一张纸和笔。录像前问一句能不能拍；客户不愿出镜，就只拍IP和记事纸。",
-      "takeaway": "先听清楚，再复述；没确定的预算和工期不替客户决定。",
+      "takeaway": "先问对方最想解决什么，再确认谁用、有哪些限制。听完复述一次，最后约好下一件事。",
       "file": "videos/13437715451966486.mp4",
       "duration": 160.266667,
       "shots": [
         {
-          "title": "先问能不能拍，再说来意",
+          "title": "先问能不能拍，再说来做什么",
           "where": "站在沟通双方旁边，离人约1.5米。",
           "frame": "手机竖着；愿意出镜的人和正在聊的空间一起入画。",
           "action": "先征得同意，再按录像；IP说今天先聊哪件事。",
@@ -780,10 +822,11 @@
           "keep": 6,
           "clip": "clips/f93522311f51d597.mp4",
           "clipPoster": "clips/f93522311f51d597.jpg",
-          "image": "assets/v1-2.jpg"
+          "image": "assets/v1-2.jpg",
+          "logic": "拍别人之前先征得同意，也让对方知道今天只是聊想法，不是马上替他做决定。"
         },
         {
-          "title": "问最想先解决哪件事",
+          "title": "先问最想解决哪件事",
           "where": "保持刚才的位置，手机对着回答的人。",
           "frame": "拍上半身和一点现场；不要边问边晃手机。",
           "action": "按录像，问一句，然后安静等对方回答。",
@@ -795,10 +838,11 @@
           "keep": 10,
           "clip": "clips/3ab3cb126f3eac9e.mp4",
           "clipPoster": "clips/3ab3cb126f3eac9e.jpg",
-          "image": "assets/v1-3.jpg"
+          "image": "assets/v1-3.jpg",
+          "logic": "事情很多时，先找最要紧的一件，再请对方举个例子，才不会聊散。"
         },
         {
-          "title": "问谁使用，谁一起定方案",
+          "title": "分清谁来用，谁一起决定",
           "where": "站在客户斜前方约1米。",
           "frame": "拍客户；不愿出镜就拍IP听和记录的动作。",
           "action": "按录像，把两个问题分开问，问完一个再问下一个。",
@@ -810,10 +854,11 @@
           "keep": 8,
           "clip": "clips/2da0a6483fb2d5ad.mp4",
           "clipPoster": "clips/2da0a6483fb2d5ad.jpg",
-          "image": "assets/v1-2.jpg"
+          "image": "assets/v1-2.jpg",
+          "logic": "用东西的人和决定买不买的人可能不同，两边的想法都要听清。"
         },
         {
-          "title": "问时间和预算有没有想法",
+          "title": "问清时间和花钱的打算",
           "where": "站到纸笔旁边，离纸约半米；先避开姓名电话。",
           "frame": "只拍写“时间、预算、待确认”的纸和手。",
           "action": "按录像。客户愿意讲就记录；不愿公开金额，只记待确认。",
@@ -825,10 +870,11 @@
           "keep": 10,
           "clip": "clips/6aefbd146cfdeac2.mp4",
           "clipPoster": "clips/6aefbd146cfdeac2.jpg",
-          "image": "assets/v1-3.jpg"
+          "image": "assets/v1-3.jpg",
+          "logic": "知道什么时候要做、大概准备花多少，后面的办法才不会离对方太远。没定就记没定。"
         },
         {
-          "title": "把刚才听到的复述一遍",
+          "title": "把听到的说回去，看看对不对",
           "where": "站在IP侧前方约1.5米。",
           "frame": "IP和客户都在画面里；能看见IP在核对笔记。",
           "action": "按录像。IP按笔记复述，不增加客户没说的要求。",
@@ -840,10 +886,11 @@
           "keep": 12,
           "clip": "clips/afc2c181bfea53f0.mp4",
           "clipPoster": "clips/afc2c181bfea53f0.jpg",
-          "image": "assets/v1-5.jpg"
+          "image": "assets/v1-5.jpg",
+          "logic": "按对方说的意思复述，让他纠正。听懂了再往下做，比自己猜更稳妥。"
         },
         {
-          "title": "约清下一件事就结束",
+          "title": "约好接下来一起做什么",
           "where": "站在两人侧前方约2米。",
           "frame": "两人一起入画；不要拍清手机里的联系方式。",
           "action": "按录像。确认下次是量房、看样还是核方案，不代替客户选。",
@@ -855,21 +902,22 @@
           "keep": 8,
           "clip": "clips/fb454ae71fd48860.mp4",
           "clipPoster": "clips/fb454ae71fd48860.jpg",
-          "image": "assets/v1-6.jpg"
+          "image": "assets/v1-6.jpg",
+          "logic": "把下一件事、联系谁、什么时候说清，别把“下次再聊”当成已经约好了。"
         }
       ]
     },
     {
       "id": 9,
-      "name": "巡检：买饭探班，看进度与细节",
+      "name": "到工地，看看做得怎么样",
       "task": "让人看懂：现场做到哪，细节怎么做，接下来做什么。",
       "need": "真实施工现场、IP、愿意交流的施工人员。正常检查由负责人操作；没买饭可直接从到场开始拍。",
-      "takeaway": "用具体画面和施工人员回答交代进度；买饭开头压短，重点留给现场。",
+      "takeaway": "去工地先看做到哪，再看细节和检查结果，问清遇到的问题，最后约好下一次看什么。",
       "file": "videos/13437727876812319.mp4",
       "duration": 98.633333,
       "shots": [
         {
-          "title": "买饭探班，先说去干什么",
+          "title": "先让人知道你为什么去工地",
           "where": "站在IP斜前方约1.5米，不挡店家",
           "frame": "拍到IP和打包好的饭；手机竖着拿",
           "action": "先录像，再让IP拿起打包袋，说一句来意",
@@ -881,10 +929,11 @@
           "keep": 10,
           "clip": "clips/inspect-0-8.mp4",
           "clipPoster": "clips/inspect-0-8.jpg",
-          "image": "assets/inspect-6.jpg"
+          "image": "assets/inspect-6.jpg",
+          "logic": "买饭只是原片里的一个做法，不是非拍不可。重点是让人知道你来关心现场、查看进度。"
         },
         {
-          "title": "到现场，先拍现在做到哪",
+          "title": "先看现在做到哪了",
           "where": "站在厨房门口，离IP约2米",
           "frame": "IP和厨房整体都入画；地面、墙面、灶台尽量拍全",
           "action": "按录像，让IP指出已完成和未完成的位置",
@@ -896,10 +945,11 @@
           "keep": 10,
           "clip": "clips/inspect-44-50.mp4",
           "clipPoster": "clips/inspect-44-50.jpg",
-          "image": "assets/inspect-46.jpg"
+          "image": "assets/inspect-46.jpg",
+          "logic": "先把做完和没做完的地方给人看，观众才知道工地现在是什么情况。"
         },
         {
-          "title": "靠近拍一处具体细节",
+          "title": "把一个小地方看仔细",
           "where": "站在IP指的位置前约1米，不挡操作",
           "frame": "先拍位置全貌，再靠近拍砖缝或转角；别只拍脸",
           "action": "先录像，让IP指着细节讲；手机跟着手指",
@@ -911,10 +961,11 @@
           "keep": 10,
           "clip": "clips/inspect-50-58.mp4",
           "clipPoster": "clips/inspect-50-58.jpg",
-          "image": "assets/inspect-50.jpg"
+          "image": "assets/inspect-50.jpg",
+          "logic": "选一处细节，拍清它是什么、为什么这样做，比一句“做得好”更有内容。"
         },
         {
-          "title": "拍一段检查，留住结果",
+          "title": "检查给人看，结果也留下",
           "where": "站在负责人指定的侧面，离检查点约1米",
           "frame": "拍清检查部位、动作和结果；不挡负责人操作",
           "action": "先录像，再请负责人做一次检查；不中断关键过程",
@@ -926,10 +977,11 @@
           "keep": 10,
           "clip": "clips/inspect-68-76.mp4",
           "clipPoster": "clips/inspect-68-76.jpg",
-          "image": "assets/inspect-70.jpg"
+          "image": "assets/inspect-70.jpg",
+          "logic": "不只拍检查动作，还要拍到检查到了什么。有问题就如实记下来。"
         },
         {
-          "title": "让施工人员讲清难点",
+          "title": "让做这件事的人讲讲难在哪",
           "where": "站在两人斜前方约1.5米",
           "frame": "IP和施工人员同框，背景带到正在说的位置",
           "action": "按录像，IP问一句，让施工人员完整回答",
@@ -941,10 +993,11 @@
           "keep": 10,
           "clip": "clips/inspect-76-90.mp4",
           "clipPoster": "clips/inspect-76-90.jpg",
-          "image": "assets/inspect-82.jpg"
+          "image": "assets/inspect-82.jpg",
+          "logic": "施工的人最清楚遇到了什么麻烦。请他说明怎么处理，别替他编答案。"
         },
         {
-          "title": "最后把下一步问明白",
+          "title": "说清接下来做什么、再查什么",
           "where": "保持刚才站位，手机拿稳",
           "frame": "两人都拍到；说到哪里就带到哪里",
           "action": "先录像，IP问下一步，让负责人按安排回答",
@@ -956,7 +1009,8 @@
           "keep": 10,
           "clip": "clips/inspect-90-98.633333.mp4",
           "clipPoster": "clips/inspect-90-98.633333.jpg",
-          "image": "assets/inspect-94.jpg"
+          "image": "assets/inspect-94.jpg",
+          "logic": "最后约好下一项工作和下次要看的地方；时间没确定，就说还没确定。"
         }
       ]
     }

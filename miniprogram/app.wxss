@@ -18,3 +18,5 @@ button.primary[disabled] { background:var(--select);color:var(--ink-3); }
 .mode-tag { display:inline-flex;align-items:center;border:1px solid var(--warn);color:var(--warn);border-radius:8rpx;padding:0 12rpx;font-size:24rpx;font-weight:500; }
 .skeleton { background:var(--select);border-radius:8rpx;height:24rpx;margin:24rpx 0; }
 .skeleton.short { width:55%; }
+
+.brand-heading { display:flex;align-items:center;min-height:88rpx;margin-bottom:24rpx; }

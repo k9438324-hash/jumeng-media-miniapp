@@ -1,17 +1,10 @@
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http';
-import { readFileSync, statSync, createReadStream, realpathSync } from 'node:fs';
-import { resolve, sep } from 'node:path';
+import { statSync, createReadStream, realpathSync, existsSync } from 'node:fs';
+import { resolve, sep, dirname } from 'node:path';
 import { Store, HttpError, hash, type Context, type Job, type Conversation } from './store.js';
 import type { Config } from './config.js';
 import { generate, prompt, type Provider } from './provider.js';
-interface Shot { [key: string]: unknown }
-interface Lesson { id: number; name: string; shots: Shot[]; [key: string]: unknown }
-const course = JSON.parse(readFileSync(new URL('../../miniprogram/data/course.json', import.meta.url), 'utf8')) as { lessons: Lesson[] };
-const mediaFiles = new Set<string>();
-for (const l of course.lessons) {
-  mediaFiles.add(String(l.file));
-  for (const s of l.shots) for (const key of ['clip','clipPoster','image']) if (s[key]) mediaFiles.add(String(s[key]));
-}
+import { Content } from './content.js';
 function publicConversation({ owner: _owner, ...c }: Conversation) { return c; }
 function publicJob({ owner: _owner, requestId: _requestId, ...j }: Job) { return j; }
 async function body(req: IncomingMessage): Promise<Record<string, unknown>> {
@@ -20,7 +13,7 @@ async function body(req: IncomingMessage): Promise<Record<string, unknown>> {
   try { const data = JSON.parse(Buffer.concat(chunks).toString() || '{}'); if (!data || typeof data !== 'object' || Array.isArray(data)) throw 0; return data; }
   catch { throw new HttpError(400, 'JSON 格式错误'); }
 }
-function context(value: unknown): Context | null {
+function context(value: unknown, course: { lessons: { id:number; shots: unknown[] }[] }): Context | null {
   if (value == null) return null;
   const c = value as Context;
   const lesson = course.lessons.find(l => l.id === c.lessonId);
@@ -29,6 +22,7 @@ function context(value: unknown): Context | null {
 }
 export function createApplication(config: Config, provider: Provider = generate) {
   const store = new Store(config.dbPath);
+  const content = new Content(store.db);
   const running = new Map<string, { controller: AbortController; promise: Promise<void> }>();
   const loginAttempts = new Map<string, { since: number; count: number }>();
   const send = (res: ServerResponse, code: number, data: unknown) => { res.writeHead(code, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' }); res.end(JSON.stringify(data)); };
@@ -38,7 +32,7 @@ export function createApplication(config: Config, provider: Provider = generate)
     const promise = (async () => {
       try {
         const c = store.conversation(job.owner, job.conversationId);
-        const lesson = c.context ? course.lessons.find(l=>l.id === c.context!.lessonId) : undefined;
+        const lesson = c.context ? content.course().lessons.find(l=>l.id === c.context!.lessonId) : undefined;
         const reference = lesson ? { lesson, currentShot: c.context!.shotIndex } : undefined;
         await provider(prompt(c, reference), config, controller.signal, delta => {
           if (controller.signal.aborted) return;
@@ -64,10 +58,17 @@ export function createApplication(config: Config, provider: Provider = generate)
     await promise;
   }
   function media(req: IncomingMessage, res: ServerResponse, path: string) {
-    if (!config.mediaRoot) throw new HttpError(404, '未配置媒体目录');
     const key = decodeURIComponent(path.slice('/media/'.length));
+    const mediaFiles=new Set<string>();
+    for (const l of content.course().lessons) {
+      mediaFiles.add(l.file);
+      for(const s of l.shots)for(const k of ['clip','clipPoster','image'])if(s[k])mediaFiles.add(String(s[k]));
+    }
     if (!mediaFiles.has(key)) throw new HttpError(404, '媒体不存在');
-    const root = realpathSync(config.mediaRoot), target = realpathSync(resolve(root, key));
+    const uploads=resolve(dirname(config.dbPath),'uploads');
+    const folder=existsSync(resolve(uploads,key))?uploads:config.mediaRoot;
+    if(!folder || !existsSync(resolve(folder,key)))throw new HttpError(404,'媒体文件尚未配置');
+    const root = realpathSync(folder), target = realpathSync(resolve(root, key));
     if (!target.startsWith(root + sep)) throw new HttpError(403, '媒体路径无效');
     const stat = statSync(target); if (!stat.isFile()) throw new HttpError(404, '媒体不存在');
     let start = 0, end = stat.size - 1, status = 200;
@@ -78,7 +79,7 @@ export function createApplication(config: Config, provider: Provider = generate)
       else { start = Number(match[1]); if (match[2]) end = Math.min(Number(match[2]), end); }
       if (start > end || start >= stat.size) { res.writeHead(416, { 'Content-Range': `bytes */${stat.size}` }); res.end(); return; } status = 206;
     }
-    res.writeHead(status, { 'Content-Type': key.endsWith('.mp4') ? 'video/mp4' : 'image/jpeg', 'Content-Length': end-start+1, 'Accept-Ranges': 'bytes', ...(status === 206 ? { 'Content-Range': `bytes ${start}-${end}/${stat.size}` } : {}) });
+    res.writeHead(status, { 'Content-Type': key.endsWith('.mp4') ? 'video/mp4' : key.endsWith('.png')?'image/png':'image/jpeg', 'Content-Length': end-start+1, 'Accept-Ranges': 'bytes', ...(status === 206 ? { 'Content-Range': `bytes ${start}-${end}/${stat.size}` } : {}) });
     if (req.method === 'HEAD') { res.end(); return; }
     const stream = createReadStream(target, { start, end });
     stream.on('error', () => res.destroy()); res.on('close', () => stream.destroy()); stream.pipe(res);
@@ -106,18 +107,20 @@ export function createApplication(config: Config, provider: Provider = generate)
           if (!result.ok) throw new HttpError(502, '微信身份服务不可用');
           const identity = await result.json() as { openid?: string; errcode?: number };
           if (!identity.openid || identity.errcode) throw new HttpError(401, '微信登录失败，请重新登录');
-          if (!config.allowedOpenids.includes(identity.openid)) throw new HttpError(403, '此微信账号未开通使用权限');
           owner = 'wx:' + hash(identity.openid);
+          if (!store.allowed(owner,config.allowedOpenids)) throw new HttpError(403, '此微信账号未开通使用权限');
         }
         return send(res, 200, { ...store.session(owner), authMode: config.authMode, aiMode: config.aiMode });
       }
       const token = (req.headers.authorization || '').replace(/^Bearer /, '');
       const owner = store.owner(token);
       // 实时检查名单，已移除的学员不能继续用旧会话调用。
-      if (config.authMode === 'wechat' && !config.allowedOpenids.some(id => 'wx:' + hash(id) === owner)) throw new HttpError(403, '使用权限已关闭');
+      if ((config.authMode === 'wechat' && !store.allowed(owner,config.allowedOpenids)) || store.db.prepare('SELECT enabled FROM students WHERE owner=?').get(owner)?.enabled===0) throw new HttpError(403, '使用权限已关闭');
+      if (path === '/course' && req.method === 'GET') return send(res,200,content.course());
+      if (path === '/account' && req.method === 'GET') return send(res, 200, store.account(owner,config.dailyLimit));
       if (path === '/conversations') {
         if (req.method === 'GET') return send(res, 200, { items: store.list(owner).map(c => ({ id: c.id, title: c.title, updatedAt: c.updatedAt, context: c.context })) });
-        if (req.method === 'POST') return send(res, 201, publicConversation(store.create(owner, context((await body(req)).context))));
+        if (req.method === 'POST') return send(res, 201, publicConversation(store.create(owner, context((await body(req)).context,content.course()))));
       }
       const conversationMatch = /^\/conversations\/([\w-]+)$/.exec(path);
       if (conversationMatch && req.method === 'GET') return send(res, 200, publicConversation(store.conversation(owner, conversationMatch[1])));

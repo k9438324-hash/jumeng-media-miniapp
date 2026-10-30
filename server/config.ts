@@ -13,7 +13,7 @@ export function loadConfig(env = process.env): Config {
   if (authMode === 'mock' && !['127.0.0.1','::1','localhost'].includes(host)) throw new Error('模拟身份只允许监听本机回环地址');
   if (env.NODE_ENV === 'production' && (authMode !== 'wechat' || aiMode !== 'deepseek')) throw new Error('生产环境必须使用微信身份和真实 AI');
   const allowedOpenids = (env.WECHAT_ALLOWED_OPENIDS || '').split(',').map(x => x.trim()).filter(Boolean);
-  if (authMode === 'wechat' && (!env.WECHAT_APP_ID || !env.WECHAT_APP_SECRET || !allowedOpenids.length)) throw new Error('微信模式缺少 AppID、AppSecret 或学员 OpenID 许可名单');
+  if (authMode === 'wechat' && (!env.WECHAT_APP_ID || !env.WECHAT_APP_SECRET)) throw new Error('微信模式缺少 AppID、AppSecret；学员仍需许可名单或后台开通');
   if (aiMode === 'deepseek' && !env.DEEPSEEK_API_KEY) throw new Error('真实 AI 缺少服务端 DEEPSEEK_API_KEY，不会自动降级模拟');
   const deepseekBase = (env.DEEPSEEK_BASE_URL || 'https://api.deepseek.com').replace(/\/$/, '');
   if (!deepseekBase.startsWith('https://')) throw new Error('DeepSeek 地址必须为 HTTPS');

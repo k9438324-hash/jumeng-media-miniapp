@@ -1,1 +1,6 @@
-{"navigationBarTitleText":"聚梦传媒 · 对标 SOP"}
+{
+  "navigationBarTitleText": "",
+  "usingComponents": {
+    "brand-menu": "/components/brand-menu/index"
+  }
+}

@@ -1,12 +1,13 @@
 import { api, sessionLabel, ApiError } from '../../services/api';
 import { config } from '../../config';
 import { Context, Conversation, Job } from '../../domain';
-import course from '../../data/course';
+import { course, refreshCourse } from '../../services/course';
 const prefix = 'jumeng:chat:' + config.authMode + ':' + config.apiBase + ':';
 type RetryAction = 'init' | 'send' | 'poll' | 'history' | 'stop' | 'load';
 interface PendingSend { conversationId: string; requestId: string; content: string }
 Page({
   data: {
+    menuItems: [{ label: '新对话', action: 'new', guarded: true }, { label: '历史对话', action: 'history', guarded: true }],
     modeLabel: '正在连接服务端', input: '', conversation: null as Conversation | null,
     contextLabel: '', busy: false, connecting: false, partial: '', status: '',
     error: '', historyOpen: false, history: [] as Pick<Conversation, 'id' | 'title' | 'updatedAt'>[],
@@ -26,6 +27,10 @@ Page({
   jobId: '',
   action: 'init' as RetryAction,
   loadId: '',
+  menuCommand(e: WechatMiniprogram.CustomEvent<{ action: string }>) {
+    if (e.detail.action === 'new') void this.newConversation();
+    if (e.detail.action === 'history') void this.showHistory();
+  },
   onShow() { this.visible = true; void this.initialize(); this.syncTabBar(1); },
   syncTabBar(index: number) {
     if (typeof this.getTabBar === 'function' && this.getTabBar()) {
@@ -38,12 +43,14 @@ Page({
     this.action = action;
     const message = error instanceof Error ? error.message : '请求失败，请重试';
     const sessionExpired = error instanceof ApiError && error.status === 401;
-    this.setData({ error: message, errorKind: /额度|开通|权限/.test(message) ? 'warning' : 'error', sessionExpired, connecting: false });
+    this.setData({ error: message, errorKind: /额度|开通|权限|到期/.test(message) ? 'warning' : 'error', sessionExpired, connecting: false });
   },
   async initialize() {
     const epoch = ++this.epoch;
     this.setData({ connecting: true, error: '' });
     try {
+      await refreshCourse().catch(()=>{});
+      if(epoch!==this.epoch)return;
       const pending = wx.getStorageSync('jumeng:pendingSop') as Context | undefined;
       let id = wx.getStorageSync(prefix + 'current') as string;
       if (pending) {
@@ -168,7 +175,7 @@ Page({
       const job = await api<Job>('/generations/' + requestedJob);
       if (requestedJob !== this.jobId || job.conversationId !== this.data.conversation?.id) return;
       this.setData({ isMock: job.mode === 'mock', modeLabel: job.mode === 'mock' ? '模拟模式 · 未调用真实 AI' : 'DeepSeek · 文字辅助', canRegenerate: job.status === 'stopped' });
-      this.setData({ partial: job.text, error: '', status: job.status === 'running' ? '生成中…' : job.status === 'stopped' ? '已停止，已保留生成内容' : job.status === 'failed' ? '生成失败' : '已完成' });
+      this.setData({ partial: job.text, error: '', status: job.status === 'running' ? '正在生成…' : job.status === 'stopped' ? '已停止生成' : job.status === 'failed' ? '生成失败' : '已完成' });
       this.scrollToEnd();
       if (job.status === 'running') {
         this.setData({ busy: true });

@@ -1,13 +1,15 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { setTimeout as delay } from 'node:timers/promises';
 import { harness } from './mini-harness.mjs';
 const tap=(key,value)=>({currentTarget:{dataset:{[key]:value}}});
-test('两个固定导航与五类真实案例，54镜必需字段齐全',()=>{
+test('三个底部导航与五类真实案例，54镜必需字段齐全',()=>{
   const app=JSON.parse(readFileSync('miniprogram/app.json'));
-  assert.deepEqual(app.tabBar.list.map(x=>x.text),['对标 SOP','聚梦AI']);
-  assert.equal(app.pages.length,2);assert.equal(app.pages[0],'pages/sop/index');
+  assert.deepEqual(app.tabBar.list.map(x=>x.text),['对标 SOP','聚梦AI','会员']);
+  assert.equal(app.pages.length,3);assert.equal(app.pages[0],'pages/sop/index');
+  assert.equal(app.pages[2],'pages/account/index');
   const h=harness('miniprogram/pages/sop/index.js');h.page.onLoad();
   assert.deepEqual(h.page.data.categories.map(c=>c.name),['量房','开工','案例','谈单','巡检']);
   let shots=0;
@@ -97,4 +99,71 @@ test('生成任务404清理恢复状态，退出生成中并允许重新发送',
   h.storage.set(prefix+'job',{conversationId:'old',id:'lost'});
   h.page.jobId='lost';h.page.data.busy=true;h.page.data.conversation={id:'old',messages:[{role:'user',content:'待重试的问题'}]};
   await h.page.poll();assert.equal(h.page.data.busy,false);assert.equal(h.page.jobId,'');assert.equal(h.storage.has(prefix+'job'),false);assert.equal(h.page.action,'send');
+});
+
+test('会员页显式登录、用量展示、刷新失败不显示过期余额',async()=>{
+  let fail=false,calls=0;
+  const h=harness('miniprogram/pages/account/index.js',{
+    request:o=>{
+      calls++;
+      if(o.url.endsWith('/auth/login'))return o.success({statusCode:200,data:{token:'account-token',expiresAt:Date.now()+86400000,authMode:'mock',aiMode:'mock'}});
+      if(fail)return o.success({statusCode:401,data:{error:'登录已过期'}});
+      return o.success({statusCode:200,data:{membership:{label:'体验',startsAt:0,expiresAt:86400000,quota:10,used:2},status:'active',remaining:8,todayUsed:2,dailyLimit:30,records:[{id:'job',at:0,status:'completed',mode:'mock',charged:1}]}});
+    }
+  });
+  let selected;h.page.getTabBar=()=>({setData:data=>{selected=data.selected;}});
+  h.page.onShow();assert.equal(calls,0);assert.equal(selected,2);
+  await h.page.refresh();assert.equal(h.page.data.account.remaining,8);assert.equal(h.page.data.statusLabel,'使用中');
+  assert.match(h.page.data.records[0].time,/1970\/1\/1 08:00/);assert.equal(h.page.data.records[0].status,'已完成');
+  fail=true;await h.page.refresh();assert.equal(h.page.data.account,null);assert.match(h.page.data.error,/过期/);assert.equal(h.page.data.loading,false);
+});
+
+test('目录随课程增长：新案例置前、动态数量、搜索与空分类',()=>{
+  const course=JSON.parse(readFileSync('miniprogram/data/course.json','utf8'));
+  const template=course.lessons[0];
+  course.lessons=Array.from({length:21},(_,index)=>({...template,id:index+100,name:'案例'+index}));
+  course.categories[0].lessonIds=course.lessons.map(l=>l.id);course.categories[1].lessonIds=[];
+  const h=harness('miniprogram/pages/sop/index.js',{}, {
+    [resolve('miniprogram/data/course.js')]:{__esModule:true,default:course}
+  });
+  const p=h.page;p.onLoad();p.onShow();
+  assert.equal(p.data.caseCount,21);assert.equal(p.data.showSearch,true);
+  assert.equal(p.data.visibleCases[0].id,120);
+  p.toggleSearch();p.search({detail:{value:'案例20'}});assert.equal(p.data.visibleCases.length,1);
+  p.openCase(tap('id',120));p.back();assert.equal(p.data.visibleCases[0].isNew,false);
+  p.selectCategory(tap('id','start'));assert.equal(p.data.caseCount,0);assert.equal(p.data.visibleCases.length,0);assert.equal(p.data.showSearch,false);
+});
+
+test('Logo 菜单：展开收起、忙碌禁用、点击执行一次、切页关闭',()=>{
+  const h=harness('miniprogram/components/brand-menu/index.js'),p=h.page,commands=[];
+  p.properties.items=[{label:'新对话',action:'new',guarded:true},{label:'历史',action:'history',guarded:true}];
+  p.triggerEvent=(name,detail)=>commands.push({name,...detail});
+  p.toggle();assert.equal(p.data.open,true);
+  p.properties.busy=true;p.choose(tap('index',0));assert.equal(commands.length,0);assert.equal(p.data.open,true);
+  p.properties.busy=false;p.choose(tap('index',1));assert.equal(commands.length,1);assert.equal(commands[0].action,'history');assert.equal(p.data.open,false);
+  p.toggle();p.close();assert.equal(p.data.open,false);
+  p.toggle();p.pageLifetimes.hide.call(p);assert.equal(p.data.open,false);
+});
+
+test('三个页面的 Logo 菜单沿用原功能入口',()=>{
+  const sop=harness('miniprogram/pages/sop/index.js').page;let back=0,privacy=0;
+  sop.back=()=>back++;sop.showPrivacy=()=>privacy++;
+  sop.menuCommand({detail:{action:'catalog'}});sop.menuCommand({detail:{action:'privacy'}});assert.equal(back,1);assert.equal(privacy,1);
+  const ai=harness('miniprogram/pages/ai/index.js').page;let fresh=0,history=0;
+  ai.newConversation=async()=>fresh++;ai.showHistory=async()=>history++;
+  ai.menuCommand({detail:{action:'new'}});ai.menuCommand({detail:{action:'history'}});assert.equal(fresh,1);assert.equal(history,1);
+  const account=harness('miniprogram/pages/account/index.js').page;let refresh=0;account.refresh=async()=>refresh++;
+  account.menuCommand({detail:{action:'refresh'}});assert.equal(refresh,1);
+});
+
+test('小程序刷新服务器课程后可直接打开新发布案例',async()=>{
+  const course=JSON.parse(readFileSync('miniprogram/data/course.json','utf8'));
+  const added=structuredClone(course.lessons[0]);added.id=98765;added.name='服务器新发布案例';
+  course.lessons.push(added);course.categories[0].lessonIds.push(added.id);
+  const h=harness('miniprogram/pages/sop/index.js',{request:o=>{
+    if(o.url.endsWith('/auth/login'))return o.success({statusCode:200,data:{token:'course-token',expiresAt:Date.now()+86400000,authMode:'mock',aiMode:'mock'}});
+    o.success({statusCode:200,data:course});
+  }});
+  h.page.onLoad();await h.page.loadCourse();assert.equal(h.page.data.visibleCases[0].id,98765);
+  h.page.openCase(tap('id',98765));assert.equal(h.page.data.lesson.name,'服务器新发布案例');assert.equal(h.page.data.shot.title,added.shots[0].title);
 });

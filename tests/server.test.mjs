@@ -19,7 +19,7 @@ async function fixture(t, overrides = {}, provider) {
     const response = await fetch(base+path,{method,headers:{'Content-Type':'application/json', ...(token ? {Authorization:'Bearer '+token} : {})},body:data === undefined ? undefined : JSON.stringify(data)});
     return { status: response.status, data: await response.json() };
   }
-  async function login(deviceId='test-device-alpha') { const r=await request('/auth/login','POST',{deviceId}); assert.equal(r.status,200); return r.data.token; }
+  async function login(deviceId='test-device-alpha') { const r=await request('/auth/login','POST',{deviceId}); assert.equal(r.status,200); const owner=app.store.owner(r.data.token); if (!app.store.membership(owner)) app.store.grant(owner,90,1000,'测试权益'); return r.data.token; }
   async function settle(id,token) {
     for(let i=0;i<100;i++) { const r=await request('/generations/'+id,'GET',undefined,token); if(r.data.status!=='running')return r.data; await delay(10); }
     throw new Error('job timeout');
@@ -54,6 +54,9 @@ test('模拟聊天：SOP上下文、进度、历史、幂等、用户隔离、�
   const start2=(await f.request(`/conversations/${c.id}/generations`,'POST',{requestId:'request-0003',content:'改成提问'},a)).data;
   const stopped=(await f.request('/generations/'+start2.id,'DELETE',{},a)).data;
   assert.equal(stopped.status,'stopped'); assert.equal(stopped.text,'已收到');
+  const account=(await f.request('/account','GET',undefined,a)).data;
+  assert.equal(account.membership.used,2);
+  assert.ok(account.records.some(r=>r.id===start2.id && r.status==='stopped' && r.charged===1));
   const again=await f.login();
   assert.equal((await f.request('/conversations/'+c.id,'GET',undefined,again)).data.messages.length,4);
   assert.equal((await f.request('/conversations','GET')).status,401);
@@ -174,4 +177,52 @@ test('DeepSeek协议模拟：分块UTF8解析与上游失败；不是实际API�
     globalThis.fetch=async()=>new Response('data: {"choices":[{"delta":{"content":"截断"}}]}\n\n');
     await assert.rejects(()=>generate([],{...loadConfig({}),aiMode:'deepseek'},new AbortController().signal,()=>{}),/连接中断/);
   }finally{globalThis.fetch=original;}
+});
+
+test('会员期限、套餐扣额、幂等、过期历史和账户隔离',async t=>{
+  let calls=0;
+  const f=await fixture(t,{},async (_m,_c,_s,onText)=>{calls++;onText('可用方案');});
+  const login=await f.request('/auth/login','POST',{deviceId:'member-student'}), token=login.data.token;
+  const owner=f.app.store.owner(token), other=await f.login('member-other');
+  assert.equal((await f.request('/account')).status,401);
+  assert.equal((await f.request('/account','GET',undefined,token)).data.status,'inactive');
+  const c=(await f.request('/conversations','POST',{},token)).data;
+  const path=`/conversations/${c.id}/generations`, body={requestId:'member-request-1',content:'怎么拍'};
+  assert.equal((await f.request(path,'POST',body,token)).status,403);assert.equal(calls,0);
+  const grant=f.app.store.grant(owner,90,1,'学员体验');
+  const g=await f.request(path,'POST',body,token);assert.equal(g.status,202);await f.settle(g.data.id,token);
+  assert.equal((await f.request(path,'POST',body,token)).data.id,g.data.id);
+  assert.equal((await f.request(path,'POST',{...body,requestId:'member-request-2'},token)).status,429);
+  let account=(await f.request('/account','GET',undefined,token)).data;
+  assert.equal(account.status,'exhausted');assert.equal(account.remaining,0);assert.equal(account.todayUsed,1);
+  assert.equal(account.records.length,1);assert.equal(account.records[0].charged,1);assert.equal(account.records[0].status,'completed');
+  assert.equal((await f.request('/account','GET',undefined,other)).data.records.length,0);
+  assert.equal(calls,1);
+  const renewed=f.app.store.grant(owner,30,2,'学员续期');
+  assert.equal(renewed.expiresAt,grant.expiresAt+30*86400000);assert.equal(renewed.used,1);assert.equal(renewed.quota,3);
+  renewed.expiresAt=Date.now()-1;
+  f.app.store.db.prepare('UPDATE memberships SET data=? WHERE owner=?').run(JSON.stringify(renewed),owner);
+  assert.equal((await f.request(path,'POST',{...body,requestId:'member-expired'},token)).status,403);assert.equal(calls,1);
+  assert.equal((await f.request('/conversations/'+c.id,'GET',undefined,token)).data.messages[1].content,'可用方案');
+  assert.equal((await f.request('/account','GET',undefined,token)).data.status,'expired');
+  const now=Date.now(), restarted=f.app.store.grant(owner,30,5,'新一期');
+  assert.ok(restarted.expiresAt>=now+30*86400000);assert.equal(restarted.used,0);assert.equal(restarted.quota,5);
+  assert.equal(Number(f.app.store.db.prepare('SELECT COUNT(*) AS n FROM membership_grants WHERE owner=?').get(owner).n),3);
+  const {Store}=await import('../dist/server/store.js');const second=new Store(f.config.dbPath,false);
+  assert.equal(second.account(owner,30).remaining,5);assert.equal(second.account(owner,30).records.length,1);second.close();
+  assert.throws(()=>f.app.store.grant(owner,-1,10,'无效'),/参数/);
+  assert.equal(f.app.store.membership(owner).quota,5);
+});
+
+test('跨对话并发不超扣；失败和停止也有明确计次记录',async t=>{
+  const f=await fixture(t,{},async (_m,_c,_s,onText)=>{onText('部分');throw new Error('AI 服务失败');});
+  const token=await f.login(),owner=f.app.store.owner(token);
+  f.app.store.db.prepare('DELETE FROM memberships WHERE owner=?').run(owner);f.app.store.grant(owner,1,1,'单次');
+  const a=(await f.request('/conversations','POST',{},token)).data,b=(await f.request('/conversations','POST',{},token)).data;
+  const results=await Promise.all([a,b].map(c=>f.request(`/conversations/${c.id}/generations`,'POST',{requestId:'concurrent-member',content:'测试'},token)));
+  assert.deepEqual(results.map(r=>r.status).sort(),[202,429]);
+  const accepted=results.find(r=>r.status===202);await f.settle(accepted.data.id,token);
+  const account=(await f.request('/account','GET',undefined,token)).data;
+  assert.equal(account.remaining,0);assert.equal(account.records.length,1);assert.equal(account.records[0].status,'failed');
+  assert.equal(account.todayUsed,1);
 });

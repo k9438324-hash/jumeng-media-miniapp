@@ -95,3 +95,7 @@ DAILY_REQUEST_LIMIT=30
 - [DeepSeek Chat Completions](https://api-docs.deepseek.com/api/create-chat-completion/)：服务端POST、流式解析、可配置模型。
 
 微信文档的网页检索服务未能打开正文，已通过本机HTTPS请求读取官方页面后实现；以开发者工具和手机验证作为后续运行验收。
+
+## AI 会员权限（2026-10-30 新增）
+
+生成任务还需要有效 AI 会员和剩余套餐次数；WECHAT_ALLOWED_OPENIDS 只代表账号准入，不再直接代表 AI 使用权限。旧数据库新增会员与流水表，不自动赋予权益。部署前先备份数据库，按 `docs/会员管理.md` 为原学员开通，再恢复对外服务。SOP 与对话历史不因会员到期关闭。管理命令复用 DB_PATH；不会调用付费 API。

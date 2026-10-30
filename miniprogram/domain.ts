@@ -1,6 +1,7 @@
 export interface Category { id: string; name: string; desc: string; lessonIds: number[]; primary: number }
 export interface Shot {
   title: string; where: string; frame: string; action: string; say: string;
+  logic?: string;
   stop: string; check: string; ref: number; end: number; keep: number;
   clip: string; clipPoster: string; image: string;
 }

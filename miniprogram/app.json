@@ -1,10 +1,11 @@
 {
   "pages": [
     "pages/sop/index",
-    "pages/ai/index"
+    "pages/ai/index",
+    "pages/account/index"
   ],
   "window": {
-    "navigationBarTitleText": "聚梦传媒",
+    "navigationBarTitleText": "",
     "navigationBarBackgroundColor": "#F5F1E8",
     "navigationBarTextStyle": "black",
     "backgroundColor": "#F5F1E8"
@@ -22,6 +23,10 @@
       {
         "pagePath": "pages/ai/index",
         "text": "聚梦AI"
+      },
+      {
+        "pagePath": "pages/account/index",
+        "text": "会员"
       }
     ]
   },

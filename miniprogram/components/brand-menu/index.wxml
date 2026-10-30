@@ -1,0 +1,10 @@
+<view class="brand-menu {{open ? 'is-open' : ''}}">
+ <view wx:if="{{open}}" class="menu-mask" catchtap="close" aria-label="关闭菜单"></view>
+ <button class="brand-trigger" bindtap="toggle" aria-label="聚梦传媒，{{open ? '关闭' : '打开'}}功能菜单" aria-expanded="{{open}}">
+  <image class="brand-logo" src="/assets/jumeng-avatar.png" mode="aspectFit" />
+  <view class="menu-chevron {{open ? 'up' : ''}}"></view>
+ </button>
+ <view wx:if="{{open}}" class="menu-panel" role="menu">
+  <button wx:for="{{items}}" wx:key="action" class="menu-item" data-index="{{index}}" bindtap="choose" disabled="{{item.guarded && busy}}" role="menuitem">{{item.label}}</button>
+ </view>
+</view>

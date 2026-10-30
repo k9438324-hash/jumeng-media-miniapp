@@ -8,7 +8,7 @@ const clean = s => typeof s === 'string' ? s.replaceAll('聚美传媒', '聚梦�
 const lessons = input.lessons.map(l => ({
   id: l.id, name: clean(l.name), task: clean(l.task), need: clean(l.need), takeaway: clean(l.takeaway),
   file: l.file, duration: l.duration,
-  shots: l.shots.map(s => Object.fromEntries(['title','where','frame','action','say','stop','check','ref','end','keep','clip','clipPoster','image'].map(k => [k, clean(s[k])])))
+  shots: l.shots.map(s => Object.fromEntries(['title','logic','where','frame','action','say','stop','check','ref','end','keep','clip','clipPoster','image'].map(k => [k, clean(s[k])])))
 }));
 const course = { categories: input.categories, lessons };
 mkdirSync('miniprogram/data', { recursive: true });

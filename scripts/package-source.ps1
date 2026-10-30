@@ -11,7 +11,7 @@ $count = 0
 try {
     foreach ($item in Get-ChildItem -LiteralPath $projectRoot -Recurse -File) {
         $relative = [System.IO.Path]::GetRelativePath($projectRoot, $item.FullName).Replace('\', '/')
-        $include = ($rootFiles -contains $relative) -or ($relative -match '^(miniprogram|server|scripts|tests|docs|dist|brand|\.github)/')
+        $include = ($rootFiles -contains $relative) -or ($relative -match '^(miniprogram|server|admin|scripts|tests|docs|dist|brand|\.github)/')
         if (-not $include) { continue }
         if ($relative -match '^server/(data/|\.env$)' -or $relative -match '\.sqlite($|-)' -or $relative -match '(^|/)\.env$') { continue }
         [System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile($archive, $item.FullName, $relative, [System.IO.Compression.CompressionLevel]::Optimal) | Out-Null

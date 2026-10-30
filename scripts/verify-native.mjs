@@ -7,8 +7,8 @@ const wcc=resolve(bin,'wcc.exe'),wcsc=resolve(bin,'wcsc.exe');
 if(!existsSync(wcc)||!existsSync(wcsc))throw new Error('未找到工具附带的Windows模板编译器，请设置WECHAT_DEVTOOLS_PATH指向微信开发者工具安装目录');
 const output=resolve('test-results/native');mkdirSync(output,{recursive:true});
 for(const [exe,files,name] of [
-  [wcc,['pages/sop/index.wxml','pages/ai/index.wxml'],'templates.js'],
-  [wcsc,['app.wxss','pages/sop/index.wxss','pages/ai/index.wxss','styles/tokens.wxss'],'styles.css'],
+  [wcc,['pages/sop/index.wxml','pages/ai/index.wxml','pages/account/index.wxml','components/brand-menu/index.wxml','custom-tab-bar/index.wxml'],'templates.js'],
+  [wcsc,['app.wxss','pages/sop/index.wxss','pages/ai/index.wxss','pages/account/index.wxss','components/brand-menu/index.wxss','custom-tab-bar/index.wxss','styles/tokens.wxss'],'styles.css'],
 ]){
   try{execFileSync(exe,['-o',resolve(output,name),...files],{cwd:resolve('miniprogram'),stdio:'pipe',windowsHide:true});}
   catch(e){console.error(e.stderr?.toString()||e.stdout?.toString()||e.message);process.exit(1);}

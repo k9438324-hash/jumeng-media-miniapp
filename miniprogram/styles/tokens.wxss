@@ -1,9 +1,10 @@
 page {
   --bg:#F5F1E8; --surface:#FBF8F1; --ink:#1C1B19; --ink-2:#5E5A52; --ink-3:#8F8A7F; --line:#E4DED0; --select:#ECE6D8; --accent:#D9482B; --warn:#B4531A; --danger:#B3261E;
-  --font-title:"Songti SC","Noto Serif SC","STSong","SimSun",serif;
+  --font-title:"Jumeng Serif","Songti SC","Noto Serif SC","STSong","SimSun",serif;
   --font-body:-apple-system,"PingFang SC","Helvetica Neue","Noto Sans SC","Microsoft YaHei",sans-serif;
   --space-1:8rpx; --space-2:16rpx; --space-3:24rpx; --space-4:32rpx; --space-6:48rpx; --space-8:64rpx;
   --radius-small:8rpx; --radius-panel:16rpx; --radius-pill:999rpx;
-  --size-title:52rpx; --size-section:36rpx; --size-body:30rpx; --size-help:28rpx; --size-small:24rpx;
+  --size-nav:30rpx; --size-title:52rpx; --size-section:36rpx; --size-body:30rpx; --size-help:28rpx; --size-small:24rpx;
   --video-bg:#141413; --button-text:#F5F1E8;
+  --page-gutter:40rpx; --tap-size:88rpx; --line-body:1.65; --line-title:1.35;
 }

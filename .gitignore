@@ -2,6 +2,11 @@ node_modules/
 dist/
 miniprogram/**/*.js
 miniprogram/data/course.ts
+miniprogram/data/title-font.ts
+.font-build/
+output/
+tmp/
+miniprogram/project.config.json
 server/.env
 server/data/
 *.sqlite*

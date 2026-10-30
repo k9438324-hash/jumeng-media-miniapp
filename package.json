@@ -16,7 +16,9 @@
     "verify:native": "node scripts/verify-native.mjs",
     "test:devtools": "node scripts/devtools-smoke.mjs",
     "smoke": "npm run build && node scripts/smoke-entry.mjs",
-    "watch:mini": "tsc -p tsconfig.mini.json --watch"
+    "watch:mini": "tsc -p tsconfig.mini.json --watch",
+    "member": "node --env-file-if-exists=server/.env scripts/member.mjs",
+    "admin": "npm run build && node --env-file-if-exists=server/.env dist/server/admin-main.js"
   },
   "devDependencies": {
     "@types/node": "^24.0.0",

@@ -4,7 +4,9 @@
 
 交给Claude的完整设计与原生实现提示词：[CLAUDE_UI_PROMPT.md](docs/CLAUDE_UI_PROMPT.md)。
 
-独立工程。微信原生小程序 + TypeScript；Node.js 24 服务端 + SQLite；DeepSeek 由服务端调用。界面是供 Claude 接手的简洁占位版。底部只有 **对标 SOP**、**聚梦AI**，默认进入 SOP。
+独立工程。微信原生小程序 + TypeScript；Node.js 24 服务端 + SQLite；DeepSeek 由服务端调用。采用米白底、黑色文字、橙色点缀与品牌 Logo。底部为 **对标 SOP**、**聚梦AI**、**会员**，默认进入 SOP；点击各页 Logo 展开功能菜单。
+
+本地老师后台可管理 SOP 草稿、发布状态、学员权限、会员期限与 AI 次数，见 [老师后台使用说明](docs/老师后台.md)。SOP 拆解技能尚未创建。源码同步到 GitHub 不等于部署或微信上线。
 
 已导入真实课程：五类、9 案例、54 镜、8 条不同完整视频。没有把旧网页当成小程序，没有改动 LeiLifeOS，没有上传原素材或发布上线。
 

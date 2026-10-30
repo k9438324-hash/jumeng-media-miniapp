@@ -1,4 +1,6 @@
 <view class="page sop-page {{lesson ? 'detail-page' : ''}}">
+ <view class="brand-heading"><brand-menu items="{{menuItems}}" bind:command="menuCommand" /></view>
+ <view wx:if="{{courseNotice}}" class="notice warning">{{courseNotice}}</view>
  <block wx:if="{{!lesson}}">
   <view class="title">对标 SOP</view>
   <view class="muted intro">选一种现场，照着参考片拍</view>
@@ -9,12 +11,15 @@
    </view>
   </view>
 
-  <view class="case-count-line"><text>共 {{caseCount}} 条</text><view wx:if="{{showSearch}}" class="search-entry" role="button" aria-label="搜索"><text class="search-icon"></text></view></view>
+  <view class="case-count-line"><text>共 {{caseCount}} 条</text><view wx:if="{{showSearch}}" class="search-entry" bindtap="toggleSearch" role="button" aria-label="搜索"><text class="search-icon"></text></view></view>
+
+  <view wx:if="{{showSearch && searchOpen}}" class="search-box"><input value="{{searchQuery}}" bindinput="search" placeholder="搜索案例名称或拍摄内容" maxlength="80" aria-label="搜索案例" /><button class="text-button" bindtap="toggleSearch">收起</button></view>
 
   <view wx:if="{{caseCount === 0}}" class="case-empty">这一类还没有案例</view>
 
+  <view wx:elif="{{!visibleCases.length}}" class="case-empty">没有找到相关案例</view>
   <view wx:else class="case-list">
-   <view wx:for="{{cases}}" wx:key="id" class="case-row" data-id="{{item.id}}" bindtap="openCase" role="button" aria-label="{{item.name}}">
+   <view wx:for="{{visibleCases}}" wx:key="id" class="case-row" data-id="{{item.id}}" bindtap="openCase" role="button" aria-label="{{item.name}}">
     <view class="case-main">
      <view class="case-name"><text wx:if="{{item.isNew}}" class="case-new">新</text>{{item.name}}</view>
      <view class="case-task">{{item.displayTask}}</view>
@@ -35,6 +40,7 @@
 
  <block wx:else>
   <view class="detail-heading"><button class="text-button back" bindtap="back" aria-label="返回目录">‹ 返回</button><text class="detail-name">{{lesson.name}}</text></view>
+  <view class="lesson-reason"><view class="step-label">这条视频要说清楚什么</view><view class="step-body">{{lesson.takeaway}}</view></view>
 
   <view class="video-modes"><button class="{{!full ? 'selected' : ''}}" bindtap="toggleFull" disabled="{{!full}}">当前参考片段</button><button class="{{full ? 'selected' : ''}}" bindtap="toggleFull" disabled="{{full}}">完整原片</button></view>
 
@@ -43,8 +49,9 @@
   <view wx:if="{{mediaError}}" class="notice">视频暂时无法播放<button class="text-button" bindtap="replay">重新加载</button></view>
 
   <view class="shot-heading">
-   <view class="shot-count"><text class="current-shot">第 {{shotIndex + 1}} / {{lesson.shots.length}} 镜</text></view>
    <view class="shot-title">{{shot.title}}</view>
+   <view wx:if="{{shot.logic}}" class="shot-reason"><view class="step-label">为什么这样拍</view><view class="step-body">{{shot.logic}}</view></view>
+   <view class="shot-count"><text class="current-shot">参考镜头 {{shotIndex + 1}} / {{lesson.shots.length}}</text></view>
   </view>
 
   <view class="shot-nav">
