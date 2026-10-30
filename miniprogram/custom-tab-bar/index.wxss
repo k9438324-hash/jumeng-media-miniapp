@@ -1,3 +1,4 @@
+@import "../styles/tokens.wxss";
 .tab-bar { position:fixed;left:0;right:0;bottom:0;display:flex;background:var(--bg);border-top:1px solid var(--line);padding:0 24rpx env(safe-area-inset-bottom);z-index:10; }
 .tab-item { position:relative;flex:1;min-width:0;height:112rpx;display:flex;align-items:center;justify-content:center;padding-bottom:8rpx; }
 .tab-text { color:var(--ink-2);font-family:var(--font-body);font-size:var(--size-nav);font-weight:400;line-height:1.4;white-space:nowrap; }

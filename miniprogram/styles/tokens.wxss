@@ -1,4 +1,4 @@
-page {
+page, .jumeng-theme {
   --bg:#F5F1E8; --surface:#FBF8F1; --ink:#1C1B19; --ink-2:#5E5A52; --ink-3:#8F8A7F; --line:#E4DED0; --select:#ECE6D8; --accent:#D9482B; --warn:#B4531A; --danger:#B3261E;
   --font-title:"Jumeng Serif","Songti SC","Noto Serif SC","STSong","SimSun",serif;
   --font-body:-apple-system,"PingFang SC","Helvetica Neue","Noto Sans SC","Microsoft YaHei",sans-serif;
