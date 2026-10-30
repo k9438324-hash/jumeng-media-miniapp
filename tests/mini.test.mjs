@@ -70,3 +70,31 @@ test('聊天模拟交互：SOP带入、发送、完成、复制、历史、新�
   await p.stop();assert.equal(p.data.busy,false);assert.match(p.data.status,/停止/);assert.equal(p.data.conversation.messages.length,6);
   p.onHide();await delay(1);
 });
+test('带入新SOP查询未知发送结果，不创建或扣费生成任务',async()=>{
+  let generationCreates=0;
+  const h=harness('miniprogram/pages/ai/index.js',{
+    request(o){queueMicrotask(()=>{
+      const path=new URL(o.url).pathname;let statusCode=200,data;
+      if(path==='/auth/login')data={token:'test',expiresAt:Date.now()+999999,authMode:'mock',aiMode:'mock'};
+      else if(path.includes('/by-request/')){statusCode=404;data={error:'任务不存在'};}
+      else if(path.endsWith('/generations')&&o.method==='POST'){generationCreates++;data={id:'unexpected',conversationId:'old',status:'running',text:'',error:'',mode:'mock'};}
+      else if(path.startsWith('/generations/'))data={id:'unexpected',conversationId:'old',status:'stopped',text:'',error:'',mode:'mock'};
+      else data={id:'new',title:'新对话',context:{lessonId:1,shotIndex:0},messages:[],updatedAt:Date.now()};
+      o.success({statusCode,data});
+    });},
+  });
+  const prefix='jumeng:chat:mock:http://127.0.0.1:8787:';
+  h.storage.set(prefix+'pendingSend',{conversationId:'old',requestId:'lost-request-1',content:'上次没送达'});
+  h.storage.set('jumeng:pendingSop',{lessonId:1,shotIndex:0});
+  h.page.visible=true;await h.page.initialize();
+  assert.equal(generationCreates,0);assert.equal(h.page.data.conversation.id,'new');assert.equal(h.storage.has(prefix+'pendingSend'),false);
+});
+test('生成任务404清理恢复状态，退出生成中并允许重新发送',async()=>{
+  const h=harness('miniprogram/pages/ai/index.js',{
+    request(o){queueMicrotask(()=>o.success({statusCode:new URL(o.url).pathname==='/auth/login'?200:404,data:new URL(o.url).pathname==='/auth/login'?{token:'test',expiresAt:Date.now()+999999,authMode:'mock',aiMode:'mock'}:{error:'生成任务不存在'}}));},
+  });
+  const prefix='jumeng:chat:mock:http://127.0.0.1:8787:';
+  h.storage.set(prefix+'job',{conversationId:'old',id:'lost'});
+  h.page.jobId='lost';h.page.data.busy=true;h.page.data.conversation={id:'old',messages:[{role:'user',content:'待重试的问题'}]};
+  await h.page.poll();assert.equal(h.page.data.busy,false);assert.equal(h.page.jobId,'');assert.equal(h.storage.has(prefix+'job'),false);assert.equal(h.page.action,'send');
+});

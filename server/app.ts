@@ -121,6 +121,13 @@ export function createApplication(config: Config, provider: Provider = generate)
       }
       const conversationMatch = /^\/conversations\/([\w-]+)$/.exec(path);
       if (conversationMatch && req.method === 'GET') return send(res, 200, publicConversation(store.conversation(owner, conversationMatch[1])));
+      const requestMatch = /^\/conversations\/([\w-]+)\/generations\/by-request\/([\w-]{8,100})$/.exec(path);
+      if (requestMatch && req.method === 'GET') {
+        store.conversation(owner, requestMatch[1]);
+        const job = store.findRequest(owner, requestMatch[1], requestMatch[2]);
+        if (!job) throw new HttpError(404, '生成任务不存在');
+        return send(res, 200, publicJob(job));
+      }
       const generationMatch = /^\/conversations\/([\w-]+)\/generations$/.exec(path);
       if (generationMatch && req.method === 'POST') {
         const data = await body(req);

@@ -2,6 +2,8 @@
 
 **其他AI接手先读 [NEXT_AI_HANDOFF.md](NEXT_AI_HANDOFF.md)，界面设计读 [UI_HANDOFF.md](UI_HANDOFF.md)。**
 
+交给Claude的完整设计与原生实现提示词：[CLAUDE_UI_PROMPT.md](docs/CLAUDE_UI_PROMPT.md)。
+
 独立工程。微信原生小程序 + TypeScript；Node.js 24 服务端 + SQLite；DeepSeek 由服务端调用。界面是供 Claude 接手的简洁占位版。底部只有 **对标 SOP**、**聚梦AI**，默认进入 SOP。
 
 已导入真实课程：五类、9 案例、54 镜、8 条不同完整视频。没有把旧网页当成小程序，没有改动 LeiLifeOS，没有上传原素材或发布上线。

@@ -80,6 +80,7 @@ JSON；除健康检查/登录及本机调试媒体外，均要求 `Authorization
 | `POST /conversations` | `{context?:{lessonId,shotIndex}}` | `201 Conversation` |
 | `GET /conversations/:id` | 无 | `200 Conversation` |
 | `POST /conversations/:id/generations` | `{requestId,content}` | `202 Job`，约600ms轮询一次 |
+| `GET /conversations/:id/generations/by-request/:requestId` | 无 | `200 Job`；只读查询已存在任务，未找到或越权404，不创建任务、不扣额 |
 | `GET /generations/:id` | 无 | `200 Job`；`text`为完整累计内容，不是增量 |
 | `DELETE /generations/:id` | 无 | `200 Job`；向上游传递Abort并等待任务落定 |
 

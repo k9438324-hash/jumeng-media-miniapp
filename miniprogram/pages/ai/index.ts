@@ -34,16 +34,20 @@ Page({
       if (pending) {
         const oldJob = wx.getStorageSync(prefix + 'job') as { id: string } | undefined;
         if (oldJob) {
-          await api('/generations/' + oldJob.id, 'DELETE');
+          try { await api('/generations/' + oldJob.id, 'DELETE'); }
+          catch (e) { if (!(e instanceof ApiError && e.status === 404)) throw e; }
           wx.removeStorageSync(prefix + 'job');
         }
         const pendingSend = wx.getStorageSync(prefix + 'pendingSend') as PendingSend | undefined;
         if (pendingSend) {
-          // 上次发送超时时，先用相同请求标识找回任务并停止，避免丢失在途调用。
-          const old = await api<Job>('/conversations/' + pendingSend.conversationId + '/generations', 'POST', pendingSend);
-          await api('/generations/' + old.id, 'DELETE');
+          // 只查询已经存在的任务，不因切换SOP而启动新的AI调用。
+          try {
+            const old = await api<Job>('/conversations/' + pendingSend.conversationId + '/generations/by-request/' + pendingSend.requestId);
+            await api('/generations/' + old.id, 'DELETE');
+          } catch (e) { if (!(e instanceof ApiError && e.status === 404)) throw e; }
           wx.removeStorageSync(prefix + 'pendingSend');
         }
+        if (epoch !== this.epoch) return;
         // 带入SOP时开独立对话，避免把上一案例的上下文混入新案例。
         const c = await api<Conversation>('/conversations', 'POST', { context: pending });
         if (epoch !== this.epoch) return;
@@ -123,7 +127,14 @@ Page({
         this.setData({ busy: false, partial: job.status === 'failed' ? job.text : '' });
         if (job.status === 'failed') this.fail(new Error(job.error), 'send');
       }
-    } catch (e) { this.fail(e, 'poll'); }
+    } catch (e) {
+      if (requestedJob !== this.jobId) return;
+      if (e instanceof ApiError && e.status === 404) {
+        wx.removeStorageSync(prefix + 'job'); this.jobId = '';
+        this.setData({ busy: false, status: '生成记录已失效，请重新发送' });
+        this.fail(e, 'send');
+      } else this.fail(e, 'poll');
+    }
   },
   async stop() {
     if (!this.jobId) return;

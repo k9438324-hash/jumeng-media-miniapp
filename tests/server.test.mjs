@@ -70,6 +70,19 @@ test('服务端校验：每日额度、无效SOP、输入长度和非法JSON',as
   const malformed=await fetch(f.base+'/conversations',{method:'POST',headers:{Authorization:'Bearer '+token},body:'{broken'});
   assert.equal(malformed.status,400);
 });
+test('按requestId查询只读、不扣额，并隔离其他用户',async t=>{
+  let calls=0;
+  const f=await fixture(t,{dailyLimit:1},async (_m,_c,_s,onText)=>{calls++;onText('完成');});
+  const token=await f.login(),other=await f.login('different-student');
+  const c=(await f.request('/conversations','POST',{},token)).data;
+  const path=`/conversations/${c.id}/generations/by-request/request-lookup-1`;
+  assert.equal((await f.request(path,'GET',undefined,token)).status,404);assert.equal(calls,0);
+  const g=await f.request(`/conversations/${c.id}/generations`,'POST',{requestId:'request-lookup-1',content:'如何拍摄'},token);
+  assert.equal(g.status,202);await f.settle(g.data.id,token);
+  for(let i=0;i<3;i++)assert.equal((await f.request(path,'GET',undefined,token)).data.id,g.data.id);
+  assert.equal((await f.request(path,'GET',undefined,other)).status,404);
+  assert.equal(calls,1);assert.equal(Number(f.app.store.db.prepare('SELECT count FROM usage').get().count),1);
+});
 test('失败重试保留问题且不重复用户消息；进程重启任务转失败',async t=>{
   let calls=0;
   const f=await fixture(t,{},async (_messages,_config,_signal,onText)=>{calls++; if(calls===1){onText('部分');throw new Error('AI 连接中断');} onText('重试成功');});
