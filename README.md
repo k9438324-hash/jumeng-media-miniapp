@@ -59,6 +59,8 @@ npm run verify:media
 npm test
 ```
 
+本机已安装Windows开发者工具时，可运行 `npm run verify:native`，使用其附带编译器检查WXML/WXSS；安装在其他位置时设置WECHAT_DEVTOOLS_PATH。此检查不替代工具内运行和手机验收。
+
 导入与媒体核验默认依赖本机现有文件；工程移到别处后，可在命令行传入明确的 JSON、媒体根目录参数。测试中的媒体专项依赖现有素材目录，跨机器运行前须配置 `TEST_MEDIA_ROOT`，详见验证说明。
 
 ## 接入所需信息

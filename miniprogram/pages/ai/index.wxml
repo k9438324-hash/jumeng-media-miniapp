@@ -12,7 +12,7 @@
     <button wx:for="{{history}}" wx:key="id" data-id="{{item.id}}" bindtap="selectHistory">{{item.title}}</button>
   </view>
   <view class="messages">
-    <view wx:if="{{conversation &amp;&amp; !conversation.messages.length}}" class="muted">告诉我你的现场情况，我会帮你调整拍法。</view>
+    <view wx:if="{{conversation && !conversation.messages.length}}" class="muted">告诉我你的现场情况，我会帮你调整拍法。</view>
     <view wx:for="{{conversation.messages}}" wx:key="index" class="card message {{item.role}}">
       <view class="label">{{item.role === 'user' ? '你' : '聚梦AI'}}</view>
       <text selectable class="message-text">{{item.content}}</text>
