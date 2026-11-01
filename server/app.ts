@@ -7,6 +7,7 @@ import { generate, prompt, type Provider } from './provider.js';
 import { Content } from './content.js';
 import { randomBytes, timingSafeEqual } from 'node:crypto';
 import { managementRequest } from './admin.js';
+import { selectWorkflow, validWorkflowMode } from './workflows.js';
 function publicConversation({ owner: _owner, ...c }: Conversation) { return c; }
 function publicJob({ owner: _owner, requestId: _requestId, ...j }: Job) { return j; }
 async function body(req: IncomingMessage): Promise<Record<string, unknown>> {
@@ -38,7 +39,7 @@ export function createApplication(config: Config, provider: Provider = generate)
         const c = store.conversation(job.owner, job.conversationId);
         const lesson = c.context ? content.course().lessons.find(l=>l.id === c.context!.lessonId) : undefined;
         const reference = lesson ? { lesson, currentShot: c.context!.shotIndex } : undefined;
-        await provider(prompt(c, reference), config, controller.signal, delta => {
+        await provider(prompt(c, reference, job.skill), config, controller.signal, delta => {
           if (controller.signal.aborted) return;
           job.text += delta;
           if (job.text.length > 30000) throw new Error('生成内容过长，请缩小问题范围');
@@ -53,7 +54,7 @@ export function createApplication(config: Config, provider: Provider = generate)
         clearTimeout(timeout);
         if ((job.status === 'completed' || job.status === 'stopped') && job.text) {
           const c = store.conversation(job.owner, job.conversationId);
-          c.messages.push({ role: 'assistant', content: job.text }); store.save(c);
+          c.messages.push({ role: 'assistant', content: job.text, ...(job.skill ? { skill: job.skill } : {}) }); store.save(c);
         }
         store.saveJob(job); running.delete(job.id);
       }
@@ -167,7 +168,13 @@ export function createApplication(config: Config, provider: Provider = generate)
         if (typeof data.content !== 'string' || !data.content.trim() || data.content.length > 4000) throw new HttpError(400, '请输入 1–4000 字文字');
         if (typeof data.requestId !== 'string' || !/^[\w-]{8,100}$/.test(data.requestId)) throw new HttpError(400, '请求标识无效');
         const old = store.findRequest(owner, generationMatch[1], data.requestId);
-        const job = store.begin(owner, generationMatch[1], data.requestId, data.content.trim(), config.aiMode, config.dailyLimit);
+        // 重复请求使用原任务与方法，避免网络恢复后改变计次或执行内容。
+        if (old) return send(res, 202, publicJob(old));
+        const skillMode = data.skill === undefined ? 'auto' : data.skill;
+        if (!validWorkflowMode(skillMode)) throw new HttpError(400, '处理方式无效，请重新选择');
+        const conversation = store.conversation(owner, generationMatch[1]);
+        const skill = skillMode === 'auto' ? selectWorkflow(data.content.trim(), conversation.activeSkill) : skillMode;
+        const job = store.begin(owner, generationMatch[1], data.requestId, data.content.trim(), config.aiMode, config.dailyLimit, skill, skillMode);
         if (!old) void run(job);
         return send(res, 202, publicJob(job));
       }

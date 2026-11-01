@@ -26,6 +26,36 @@ async function fixture(t, overrides = {}, provider) {
   }
   return { app, base, request, login, settle, config };
 }
+test('装修工作流：自动选择、补充续接、手动切换、持久化、无效方法与幂等计次', async t => {
+  const captured=[];
+  const f=await fixture(t,{},async(messages,_cfg,_signal,onText)=>{captured.push(messages);onText('已处理');});
+  const token=await f.login();
+  const c=(await f.request('/conversations','POST',{},token)).data;
+  const path=`/conversations/${c.id}/generations`;
+  async function send(requestId,content,skill){
+    const started=await f.request(path,'POST',{requestId,content,...(skill===undefined?{}:{skill})},token);
+    assert.equal(started.status,202);await f.settle(started.data.id,token);return started.data;
+  }
+  const first=await send('workflow-0001','帮我优化开头：这个厨房冰箱门碰柜子。');
+  assert.equal(first.skill,'hook');assert.match(captured[0][0].content,/当前工作流：开头优化/);
+  await send('workflow-0002','已经拍完，按现有画面调整。');
+  assert.match(captured[1][0].content,/当前工作流：开头优化/);
+  const manual=await send('workflow-0003','这段开头素材给我换一种处理方法。','title');
+  assert.equal(manual.skill,'title');assert.match(captured[2][0].content,/当前工作流：标题与封面/);
+  const duplicate=await f.request(path,'POST',{requestId:'workflow-0003',content:'改变文字',skill:'flow'},token);
+  assert.equal(duplicate.data.id,manual.id);assert.equal(duplicate.data.skill,'title');
+  const saved=(await f.request('/conversations/'+c.id,'GET',undefined,token)).data;
+  assert.equal(saved.skillMode,'title');assert.equal(saved.activeSkill,'title');assert.equal(saved.messages.at(-1).skill,'title');
+  for(const skill of ['__proto__','../../secret',{},'unknown']) assert.equal((await f.request(path,'POST',{requestId:'workflow-invalid',content:'检查',skill},token)).status,400);
+  const last=await send('workflow-0004','帮我检查口播逻辑：厨房很小。我们先看地砖。','auto');
+  assert.equal(last.skill,'flow');assert.equal(captured.length,4);
+  const account=(await f.request('/account','GET',undefined,token)).data;
+  assert.equal(account.membership.used,4);assert.equal(account.records.length,4);
+  // 不迁移旧数据库结构；所有方法元数据随原 JSON 持久化。
+  const {Store}=await import('../dist/server/store.js');const second=new Store(f.config.dbPath,false);
+  assert.equal(second.conversation(f.app.store.owner(token),c.id).activeSkill,'flow');second.close();
+});
+
 test('模拟聊天：SOP上下文、进度、历史、幂等、用户隔离、持久化、取消', async t=>{
   let captured;
   const f = await fixture(t, {}, async (messages,cfg,signal,onText)=>{

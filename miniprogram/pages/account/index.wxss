@@ -7,3 +7,6 @@
 .records-title { margin:40rpx 0 16rpx; }
 .record { padding:24rpx 0;border-bottom:1px solid var(--line);font-size:28rpx;line-height:1.65; }
 .empty-records { padding:32rpx 0; }
+.quota-grid { display:flex;justify-content:space-around;gap:24rpx;flex-wrap:wrap;margin:40rpx 0 32rpx; }
+.quota-item { display:flex;flex-direction:column;align-items:center;text-align:center;gap:12rpx; }
+.quota-caption { font-size:26rpx;color:var(--ink); }

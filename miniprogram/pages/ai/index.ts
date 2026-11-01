@@ -1,10 +1,12 @@
 import { api, sessionLabel, ApiError } from '../../services/api';
 import { config } from '../../config';
-import { Context, Conversation, Job } from '../../domain';
+import { Context, Conversation, Job, WorkflowMode } from '../../domain';
 import { course, refreshCourse } from '../../services/course';
+import { Account, quotaView } from '../../services/account';
+import { workflowModes, workflowLabel } from '../../services/workflows';
 const prefix = 'jumeng:chat:' + config.authMode + ':' + config.apiBase + ':';
 type RetryAction = 'init' | 'send' | 'poll' | 'history' | 'stop' | 'load';
-interface PendingSend { conversationId: string; requestId: string; content: string }
+interface PendingSend { conversationId: string; requestId: string; content: string; skill?: WorkflowMode }
 Page({
   data: {
     menuItems: [{ label: '新对话', action: 'new', guarded: true }, { label: '历史对话', action: 'history', guarded: true }, { label: '老师后台', action: 'teacher', guarded: true }],
@@ -13,12 +15,15 @@ Page({
     error: '', historyOpen: false, history: [] as Pick<Conversation, 'id' | 'title' | 'updatedAt'>[],
     isMock: false, errorKind: 'error', sessionExpired: false, keyboardHeight: 0, scrollTarget: '', canRegenerate: false,
     composerHeight: 180,
+    quota: null as ReturnType<typeof quotaView> | null,
+    workflowModes, workflowIndex: 0, activeWorkflow: '', messageSkills: [] as string[],
     messageMockFlags: [] as boolean[],
     historyGroups: [] as { label: string; items: (Pick<Conversation,'id'|'title'|'updatedAt'> & {timeLabel: string})[] }[],
     examples: [
-      '我在量房现场，空间很窄，手机应该站哪里？',
-      'IP不擅长口播，请改成提问式拍法',
-      '客户不出镜，这组镜头怎么调整？',
+      { label: '开头太平，帮我留住观众', text: '帮我优化这个视频开头：' },
+      { label: '视频拍好了，帮我起标题', text: '帮我写标题与封面文案。视频内容是：' },
+      { label: '这段口播，哪里不顺', text: '帮我检查这段口播的逻辑：' },
+      { label: '这个选题，客户会在意吗', text: '帮我评估这个选题的内容价值：' },
     ],
   },
   visible: false,
@@ -27,6 +32,21 @@ Page({
   jobId: '',
   action: 'init' as RetryAction,
   loadId: '',
+  quotaRequest: 0,
+  openAccount() {
+    wx.setStorageSync('jumeng:account:open', true);
+    wx.switchTab({ url: '/pages/account/index' });
+  },
+  async refreshQuota(requestEpoch?: number) {
+    const epoch = requestEpoch === undefined ? this.epoch : requestEpoch;
+    const request = ++this.quotaRequest;
+    try {
+      const account = await api<Account>('/account');
+      if (epoch === this.epoch && request === this.quotaRequest) this.setData({ quota: quotaView(account) });
+    } catch {
+      if (epoch === this.epoch && request === this.quotaRequest) this.setData({ quota: null });
+    }
+  },
   openTeacher() { if (this.data.busy || this.data.connecting) return; wx.navigateTo({ url: '/pages/teacher/index' }); },
   menuCommand(e: WechatMiniprogram.CustomEvent<{ action: string }>) {
     if (e.detail.action === 'teacher') { this.openTeacher(); return; }
@@ -39,7 +59,7 @@ Page({
       this.getTabBar().setData({ selected: index });
     }
   },
-  onHide() { this.visible = false; this.epoch++; clearTimeout(this.timer); this.setData({ keyboardHeight: 0 }); },
+  onHide() { this.visible = false; this.epoch++; clearTimeout(this.timer); this.setData({ keyboardHeight: 0, quota: null }); },
   onUnload() { this.visible = false; this.epoch++; clearTimeout(this.timer); },
   fail(error: unknown, action: RetryAction) {
     this.action = action;
@@ -49,7 +69,7 @@ Page({
   },
   async initialize() {
     const epoch = ++this.epoch;
-    this.setData({ connecting: true, error: '' });
+    this.setData({ connecting: true, error: '', quota: null });
     try {
       await refreshCourse().catch(()=>{});
       if(epoch!==this.epoch)return;
@@ -91,6 +111,7 @@ Page({
       }
       if (epoch !== this.epoch) return;
       this.setData({ modeLabel: sessionLabel(), isMock: sessionLabel().startsWith('模拟模式'), connecting: false });
+      void this.refreshQuota(epoch);
       this.composerSettled();
       const pendingSend = wx.getStorageSync(prefix + 'pendingSend') as PendingSend | undefined;
       if (pendingSend && pendingSend.conversationId === id) { this.setData({ busy: true }); await this.submit(pendingSend); return; }
@@ -105,7 +126,7 @@ Page({
     if (currentEpoch !== this.epoch) return;
     const lesson = course.lessons.find(l => l.id === c.context?.lessonId);
     const category = lesson ? course.categories.find(cat => cat.lessonIds.includes(lesson.id)) : undefined;
-    this.setData({ conversation: c, messageMockFlags: c.messages.map(m => m.content.startsWith('【模拟结果')), contextLabel: lesson ? (category ? category.name : lesson.name) + ' · 第' + (c.context!.shotIndex + 1) + '镜 ' + lesson.shots[c.context!.shotIndex].title : '' });
+    this.setData({ conversation: c, workflowIndex: Math.max(0, workflowModes.findIndex(item => item.id === c.skillMode)), activeWorkflow: workflowLabel(c.activeSkill), messageSkills: c.messages.map(m => workflowLabel(m.skill)), messageMockFlags: c.messages.map(m => m.content.startsWith('【模拟结果')), contextLabel: lesson ? (category ? category.name : lesson.name) + ' · 第' + (c.context!.shotIndex + 1) + '镜 ' + lesson.shots[c.context!.shotIndex].title : '' });
     this.scrollToEnd();
     wx.setStorageSync(prefix + 'current', id);
   },
@@ -128,7 +149,15 @@ Page({
     if (!last || this.data.busy) return;
     this.setData({ input: last.content, canRegenerate: false }); await this.send();
   },
-  example(e: WechatMiniprogram.TouchEvent) { this.setData({ input: e.currentTarget.dataset.text }); },
+  example(e: WechatMiniprogram.TouchEvent) {
+    if (this.data.busy || this.data.connecting) return;
+    this.setData({ input: e.currentTarget.dataset.text, workflowIndex: 0 }); this.composerSettled();
+  },
+  chooseWorkflow(e: WechatMiniprogram.CustomEvent<{ value: string }>) {
+    if (this.data.busy || this.data.connecting) return;
+    const index = Number(e.detail.value);
+    if (Number.isInteger(index) && workflowModes[index]) this.setData({ workflowIndex: index });
+  },
   async retryMessage(e: WechatMiniprogram.TouchEvent) {
     // 重试某条 AI 回复：把对应的用户问题重新填入并发送（沿用 regenerate 语义，不改业务）。
     if (this.data.busy) return;
@@ -145,7 +174,7 @@ Page({
   },
   async send() {
     if (this.data.busy || this.data.connecting || !this.data.input.trim() || !this.data.conversation) return;
-    const pending: PendingSend = { conversationId: this.data.conversation.id, requestId: 'req-' + Date.now() + '-' + Math.random().toString(36).slice(2), content: this.data.input.trim() };
+    const pending: PendingSend = { conversationId: this.data.conversation.id, requestId: 'req-' + Date.now() + '-' + Math.random().toString(36).slice(2), content: this.data.input.trim(), skill: workflowModes[this.data.workflowIndex].id };
     wx.setStorageSync(prefix + 'pendingSend', pending);
     this.setData({ busy: true, error: '', partial: '', status: '正在提交…' });
     await this.submit(pending);
@@ -153,13 +182,14 @@ Page({
   async submit(pending: PendingSend) {
     let acknowledged = false;
     try {
-      const job = await api<Job>('/conversations/' + pending.conversationId + '/generations', 'POST', { requestId: pending.requestId, content: pending.content });
+      const job = await api<Job>('/conversations/' + pending.conversationId + '/generations', 'POST', { requestId: pending.requestId, content: pending.content, skill: pending.skill || 'auto' });
       if (this.data.conversation?.id !== pending.conversationId) return;
       acknowledged = true;
       this.jobId = job.id;
       wx.setStorageSync(prefix + 'job', { conversationId: pending.conversationId, id: job.id });
       wx.removeStorageSync(prefix + 'pendingSend');
-      this.setData({ input: '', error: '', busy: true });
+      this.setData({ input: '', error: '', busy: true, activeWorkflow: workflowLabel(job.skill) });
+      this.setData({ quota: null }); void this.refreshQuota();
       await this.loadConversation(pending.conversationId);
       await this.poll();
     } catch (e) {
@@ -167,7 +197,7 @@ Page({
       // 只有明确被服务端拒绝才清除请求；网络超时保留 requestId，重试不会重复扣额。
       const rejected = e instanceof ApiError && e.status >= 400 && e.status < 500;
       if (rejected) wx.removeStorageSync(prefix + 'pendingSend');
-      this.setData({ busy: false }); this.fail(e, 'send');
+      this.setData({ busy: false, quota: null }); void this.refreshQuota(); this.fail(e, 'send');
     }
   },
   async poll() {
@@ -176,7 +206,7 @@ Page({
     try {
       const job = await api<Job>('/generations/' + requestedJob);
       if (requestedJob !== this.jobId || job.conversationId !== this.data.conversation?.id) return;
-      this.setData({ isMock: job.mode === 'mock', modeLabel: job.mode === 'mock' ? '模拟模式 · 未调用真实 AI' : 'DeepSeek · 文字辅助', canRegenerate: job.status === 'stopped' });
+      this.setData({ isMock: job.mode === 'mock', modeLabel: job.mode === 'mock' ? '模拟模式 · 未调用真实 AI' : 'DeepSeek · 文字辅助', canRegenerate: job.status === 'stopped', activeWorkflow: workflowLabel(job.skill) });
       this.setData({ partial: job.text, error: '', status: job.status === 'running' ? '正在生成…' : job.status === 'stopped' ? '已停止生成' : job.status === 'failed' ? '生成失败' : '已完成' });
       this.scrollToEnd();
       if (job.status === 'running') {
@@ -222,7 +252,7 @@ Page({
     try {
       const c = await api<Conversation>('/conversations', 'POST', {});
       wx.setStorageSync(prefix + 'current', c.id); wx.removeStorageSync(prefix + 'job'); wx.removeStorageSync(prefix + 'pendingSend');
-      this.jobId = ''; this.setData({ conversation: c, contextLabel: '', partial: '', input: '', status: '', connecting: false, historyOpen: false, canRegenerate: false });
+      this.jobId = ''; this.setData({ conversation: c, contextLabel: '', partial: '', input: '', status: '', connecting: false, historyOpen: false, canRegenerate: false, workflowIndex: 0, activeWorkflow: '', messageSkills: [] });
     } catch (e) { this.fail(e, 'init'); }
   },
   async showHistory() {

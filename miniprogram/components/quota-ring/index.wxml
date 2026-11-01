@@ -1,0 +1,6 @@
+<view class="quota-ring {{compact ? 'compact' : ''}}" role="img" aria-label="{{label}} {{value}}%">
+ <view class="ring-track"></view>
+ <view class="ring-half right"><view class="ring-arc" style="transform:rotate({{first}}deg);"></view></view>
+ <view class="ring-half left"><view class="ring-arc" style="transform:rotate({{second}}deg);"></view></view>
+ <view wx:if="{{!compact}}" class="ring-center"><text class="ring-number">{{value}}%</text><text class="ring-label">{{label}}</text></view>
+</view>

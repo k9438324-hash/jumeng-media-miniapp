@@ -42,6 +42,7 @@ test('聊天模拟交互：SOP带入、发送、完成、复制、历史、新�
   const h=harness('miniprogram/pages/ai/index.js',{
     request(options){queueMicrotask(()=>{
       const path=new URL(options.url).pathname,body=options.data;let data,statusCode=200;
+      if(path==='/account'){options.success({statusCode:200,data:{membership:{quota:100,used:0},remaining:100,status:'active',todayUsed:0,dailyLimit:30,records:[]}});return;}
       if(failNext){failNext=false;options.fail({});return;}
       if(path==='/auth/login')data={token:'mock-token',expiresAt:Date.now()+999999,authMode:'mock',aiMode:'mock'};
       else if(path==='/conversations'&&options.method==='POST'){data={id:'c-'+(++serial),title:'新对话',context:body.context||null,messages:[],updatedAt:Date.now()};conversations.set(data.id,data);}

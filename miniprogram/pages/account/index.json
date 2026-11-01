@@ -1,6 +1,7 @@
 {
   "navigationBarTitleText": "",
   "usingComponents": {
-    "brand-menu": "/components/brand-menu/index"
+    "brand-menu": "/components/brand-menu/index",
+    "quota-ring": "/components/quota-ring/index"
   }
 }

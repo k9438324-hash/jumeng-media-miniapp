@@ -1,0 +1,13 @@
+:host { display:inline-flex; }
+.quota-ring { --ring-size:224rpx;--ring-half:112rpx;--ring-stroke:10rpx;position:relative;width:var(--ring-size);height:var(--ring-size);flex-shrink:0; }
+.quota-ring.compact { --ring-size:40rpx;--ring-half:20rpx;--ring-stroke:4rpx; }
+.ring-track,.ring-half,.ring-arc { position:absolute;inset:0;box-sizing:border-box;width:var(--ring-size);height:var(--ring-size); }
+.ring-track,.ring-arc { border:var(--ring-stroke) solid var(--line);border-radius:50%; }
+.ring-arc { border-color:var(--ink); }
+.right { clip:rect(0,var(--ring-size),var(--ring-size),var(--ring-half)); }
+.right .ring-arc { clip:rect(0,var(--ring-half),var(--ring-size),0); }
+.left { clip:rect(0,var(--ring-half),var(--ring-size),0); }
+.left .ring-arc { clip:rect(0,var(--ring-size),var(--ring-size),var(--ring-half)); }
+.ring-center { position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4rpx; }
+.ring-number { font-family:var(--font-title);font-size:44rpx;color:var(--ink);line-height:1.35; }
+.ring-label { font-size:24rpx;color:var(--ink-2); }

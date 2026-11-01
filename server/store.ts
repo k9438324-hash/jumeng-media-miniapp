@@ -2,10 +2,11 @@ import { DatabaseSync } from 'node:sqlite';
 import { mkdirSync } from 'node:fs';
 import { dirname } from 'node:path';
 import { randomUUID, createHash } from 'node:crypto';
+import type { WorkflowId, WorkflowMode } from './workflows.js';
 export interface Context { lessonId: number; shotIndex: number }
-export interface Message { role: 'system' | 'user' | 'assistant'; content: string }
-export interface Conversation { id: string; owner: string; title: string; context: Context | null; messages: Message[]; updatedAt: number }
-export interface Job { id: string; owner: string; conversationId: string; requestId: string; status: 'running' | 'completed' | 'stopped' | 'failed'; text: string; error: string; mode: string }
+export interface Message { role: 'system' | 'user' | 'assistant'; content: string; skill?: WorkflowId }
+export interface Conversation { id: string; owner: string; title: string; context: Context | null; messages: Message[]; updatedAt: number; skillMode?: WorkflowMode; activeSkill?: WorkflowId }
+export interface Job { id: string; owner: string; conversationId: string; requestId: string; status: 'running' | 'completed' | 'stopped' | 'failed'; text: string; error: string; mode: string; skill?: WorkflowId }
 export interface Membership { label: string; startsAt: number; expiresAt: number; quota: number; used: number }
 export function hash(value: string): string { return createHash('sha256').update(value).digest('hex'); }
 export function dayKey(): string { return new Date(Date.now() + 8 * 3600000).toISOString().slice(0,10); }
@@ -98,13 +99,13 @@ export class Store {
     });
     return { membership, status, remaining: membership ? Math.max(0,membership.quota-membership.used) : 0, todayUsed, dailyLimit, records };
   }
-  begin(owner: string, conversationId: string, requestId: string, content: string, mode: string, limit: number): Job {
+  begin(owner: string, conversationId: string, requestId: string, content: string, mode: string, limit: number, skill?: WorkflowId, skillMode?: WorkflowMode): Job {
     const previous = this.findRequest(owner, conversationId, requestId); if (previous) return previous;
     const c = this.conversation(owner, conversationId);
     if (c.messages.length >= 60) throw new HttpError(409, '本对话已达 30 轮，请新建对话');
     const active = this.db.prepare('SELECT data FROM jobs WHERE owner=? AND conversationId=?').all(owner, conversationId).some(r=>JSON.parse(r.data as string).status === 'running');
     if (active) throw new HttpError(409, '当前对话正在生成，请先停止');
-    const job: Job = { id: randomUUID(), owner, conversationId, requestId, status: 'running', text: '', error: '', mode };
+    const job: Job = { id: randomUUID(), owner, conversationId, requestId, status: 'running', text: '', error: '', mode, ...(skill ? { skill } : {}) };
     this.db.exec('BEGIN IMMEDIATE');
     try {
       const membership = this.membership(owner);
@@ -115,6 +116,7 @@ export class Store {
       if (count >= limit) throw new HttpError(429, '今日调用额度已用完，请明天再试');
       this.db.prepare('INSERT INTO usage VALUES (?,?,1) ON CONFLICT(owner,day) DO UPDATE SET count=count+1').run(owner, dayKey());
       if (c.messages.at(-1)?.role === 'user') c.messages.pop(); // 失败/停止后重试替换未获回答的提问。
+      if (skill) { c.activeSkill = skill; c.skillMode = skillMode || 'auto'; }
       c.messages.push({ role: 'user', content }); c.title = c.messages[0].content.slice(0,24); this.save(c);
       this.db.prepare('INSERT INTO jobs VALUES (?,?,?,?,?)').run(job.id, owner, conversationId, requestId, JSON.stringify(job));
       membership.used++;

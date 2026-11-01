@@ -11,9 +11,11 @@
    <view class="subtitle">{{account.membership ? account.membership.label : 'AI 会员'}}</view>
    <view wx:if="{{account.membership}}" class="muted">有效至 {{expiresLabel}}（北京时间）</view>
    <view wx:else class="muted">请联系课程老师开通 AI 权益</view>
-   <view class="usage-row"><text>套餐剩余</text><text>{{account.remaining}} 次</text></view>
-   <view class="usage-row"><text>本期已用</text><text>{{account.membership ? account.membership.used : 0}} 次</text></view>
-   <view class="usage-row"><text>今日已用 / 每日上限</text><text>{{account.todayUsed}} / {{account.dailyLimit}} 次</text></view>
+   <view class="quota-grid">
+    <view class="quota-item"><quota-ring percent="{{quota.percent}}" label="{{quota.label}}" /><view class="quota-caption">{{account.remaining}} / {{account.membership ? account.membership.quota : 0}} 次剩余</view><view class="help">本期已用 {{account.membership ? account.membership.used : 0}} 次</view></view>
+    <view class="quota-item"><quota-ring percent="{{quota.dailyPercent}}" label="今日剩余" /><view class="quota-caption">今日还可用 {{quota.todayRemaining}} 次</view><view class="help">已用 {{account.todayUsed}} / 上限 {{account.dailyLimit}} 次</view></view>
+   </view>
+   <view class="help">圆环显示剩余比例；今日实际可用次数同时受套餐与每日上限限制。每日用量按北京时间零点重新计算，套餐次数不会每日重置。</view>
   </view>
   <view class="help">一次新请求扣 1 次；失败或主动停止仍计次，重新生成另计。网络恢复时同一请求不重复扣次。以上为调用次数，不是 token 或人民币账单。</view>
   <view wx:if="{{account.status !== 'active'}}" class="notice">{{account.status === 'expired' ? 'AI 权益已到期' : account.status === 'exhausted' ? '套餐额度已用完' : '尚未开通 AI 权益'}}，请联系课程老师处理。历史回答仍可查看。</view>
