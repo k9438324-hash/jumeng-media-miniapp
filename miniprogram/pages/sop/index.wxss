@@ -7,6 +7,7 @@
 .categories { display:flex;align-items:center;width:100%;background:var(--select);border-radius:var(--radius-pill);padding:8rpx;gap:8rpx; }
 .category { flex:1;padding:20rpx 0;font-size:28rpx;border:0;background:transparent;border-radius:var(--radius-pill);white-space:nowrap;color:var(--ink-2);font-weight:500;text-align:center;min-height:88rpx;display:flex;align-items:center;justify-content:center; }
 .category.selected { background:var(--ink);color:var(--bg);font-weight:500; }
+.category { transition:background var(--motion-fast),color var(--motion-fast),transform var(--motion-fast); }
 
 /* 共 N 条 + 搜索入口 */
 .case-count-line { display:flex;align-items:center;justify-content:space-between;margin:8rpx 0 0;min-height:48rpx;font-size:24rpx;color:var(--ink-3); }
@@ -60,7 +61,9 @@
 
 /* 镜头导航条 */
 .shot-heading { margin:24rpx 0; }
-.shot-count { margin-top:24rpx; }
+.shot-count { margin-top:24rpx;display:flex;justify-content:space-between;gap:16rpx;flex-wrap:wrap; }
+.shot-progress { height:4rpx;background:var(--line);margin-top:16rpx;overflow:hidden;border-radius:var(--radius-pill); }
+.shot-progress-fill { height:100%;width:100%;background:var(--ink);transform-origin:left center;transition:transform var(--motion-standard); }
 .current-shot { font-size:24rpx;color:var(--ink-3);font-weight:500; }
 .shot-title { font-family:var(--font-title);font-size:36rpx;line-height:var(--line-title);color:var(--ink);font-weight:600; }
 .lesson-reason { margin-bottom:24rpx;padding:24rpx 0;border-bottom:1px solid var(--line); }
@@ -90,6 +93,7 @@
 /* 将橙红集中到列表前两行，避免长列表满屏强调。 */
 .case-row:nth-child(-n+2) .case-read { color:var(--accent); }
 .case-row:nth-child(n+3) .case-new { display:none; }
-.search-box { display:flex;align-items:center;gap:16rpx;border-bottom:1px solid var(--line);margin-bottom:8rpx; }
+.search-box { display:flex;align-items:center;gap:20rpx;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-panel);padding:0 24rpx;margin-bottom:16rpx; }
 .search-box input { flex:1;min-width:0;height:88rpx;font-size:28rpx;color:var(--ink); }
+.search-box .search-icon { flex-shrink:0;width:24rpx;height:24rpx; }
 @media (prefers-reduced-motion:reduce) { .privacy-sheet { animation:none; } }

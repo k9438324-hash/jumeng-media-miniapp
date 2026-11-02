@@ -100,8 +100,8 @@ Page({
   updateCaseMeta() {
     const cases = this.data.cases as CaseItem[];
     const query = this.data.searchQuery.trim();
-    this.setData({ caseCount: cases.length, showSearch: cases.length > 20,
-      visibleCases: cases.filter(c => !query || (c.name + c.displayTask).includes(query)) });
+    this.setData({ caseCount: cases.length, showSearch: cases.length > 0,
+      visibleCases: cases.filter(c => !query || (c.name + c.displayTask + c.takeaway).toLowerCase().includes(query.toLowerCase())) });
   },
   toggleSearch() { this.setData({ searchOpen: !this.data.searchOpen, searchQuery: '' }); this.updateCaseMeta(); },
   search(e: WechatMiniprogram.CustomEvent<{ value: string }>) { this.setData({ searchQuery: e.detail.value }); this.updateCaseMeta(); },
@@ -131,16 +131,16 @@ Page({
     index = boundedIndex(index, lesson.shots.length);
     const shot = lesson.shots[index];
     this.currentTime = time;
-    this.setData({ videoSrc: '' }, () => {
-      this.setData({ shotIndex: index, shot, full, initialTime: time,
-        videoSrc: mediaUrl(config.mediaBase, full ? lesson.file : shot.clip),
-        poster: mediaUrl(config.mediaBase, shot.clipPoster), mediaError: '',
-      });
+    this.setData({ shotIndex: index, shot, full, initialTime: time, videoSrc: '', poster: mediaUrl(config.mediaBase, shot.clipPoster), mediaError: '' }, () => {
+      // 快速连续切镜时，旧播放器的延迟回调不能覆盖最新选择。
+      if (this.data.lesson?.id !== lesson.id || this.data.shotIndex !== index || this.data.full !== full) return;
+      this.setData({ videoSrc: mediaUrl(config.mediaBase, full ? lesson.file : shot.clip) });
       this.pauseAndSave();
     });
   },
-  previous() { this.pauseAndSave(); this.showShot(this.data.shotIndex - 1); },
-  next() { this.pauseAndSave(); this.showShot(this.data.shotIndex + 1); },
+  focusShot() { if (wx.pageScrollTo) wx.pageScrollTo({ selector: '.shot-heading', duration: 0 }); },
+  previous() { this.pauseAndSave(); this.showShot(this.data.shotIndex - 1); this.focusShot(); },
+  next() { this.pauseAndSave(); this.showShot(this.data.shotIndex + 1); this.focusShot(); },
   selectShot(e: WechatMiniprogram.TouchEvent) { this.pauseAndSave(); this.showShot(Number(e.currentTarget.dataset.index)); },
   toggleFull() { this.pauseAndSave(); this.showShot(this.data.shotIndex, 0, !this.data.full); },
   replay() {

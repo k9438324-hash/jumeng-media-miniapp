@@ -7,19 +7,18 @@
 
   <view class="category-bar">
    <view class="categories">
-    <view wx:for="{{categories}}" wx:key="id" class="category {{categoryId === item.id ? 'selected' : ''}}" data-id="{{item.id}}" bindtap="selectCategory" role="button" aria-label="{{item.name}}">{{item.name}}</view>
+    <view wx:for="{{categories}}" wx:key="id" class="category {{categoryId === item.id ? 'selected' : ''}}" hover-class="press-feedback" data-id="{{item.id}}" bindtap="selectCategory" role="button" aria-label="{{item.name}}" aria-selected="{{categoryId === item.id}}">{{item.name}}</view>
    </view>
   </view>
 
-  <view class="case-count-line"><text>共 {{caseCount}} 条</text><view wx:if="{{showSearch}}" class="search-entry" bindtap="toggleSearch" role="button" aria-label="搜索"><text class="search-icon"></text></view></view>
-
-  <view wx:if="{{showSearch && searchOpen}}" class="search-box"><input value="{{searchQuery}}" bindinput="search" placeholder="搜索案例名称或拍摄内容" maxlength="80" aria-label="搜索案例" /><button class="text-button" bindtap="toggleSearch">收起</button></view>
+  <view wx:if="{{showSearch}}" class="search-box"><text class="search-icon" aria-hidden="true"></text><input value="{{searchQuery}}" bindinput="search" placeholder="搜索当前分类的现场问题或案例" maxlength="80" aria-label="搜索当前分类案例" /><button wx:if="{{searchQuery}}" class="text-button" hover-class="press-feedback" bindtap="toggleSearch" aria-label="清空搜索">清空</button></view>
+  <view class="case-count-line"><text>{{searchQuery ? '找到 ' + visibleCases.length + ' 条' : '共 ' + caseCount + ' 条'}}</text><text>点开看思路与拍法</text></view>
 
   <view wx:if="{{caseCount === 0}}" class="case-empty">这一类还没有案例</view>
 
-  <view wx:elif="{{!visibleCases.length}}" class="case-empty">没有找到相关案例</view>
+  <view wx:elif="{{!visibleCases.length}}" class="case-empty"><view>没有找到相关案例</view><view class="help">试试更短的关键词，或切换现场分类。</view><button class="text-button" bindtap="toggleSearch">清空搜索</button></view>
   <view wx:else class="case-list">
-   <view wx:for="{{visibleCases}}" wx:key="id" class="case-row" data-id="{{item.id}}" bindtap="openCase" role="button" aria-label="{{item.name}}">
+   <view wx:for="{{visibleCases}}" wx:key="id" class="case-row" hover-class="press-feedback" data-id="{{item.id}}" bindtap="openCase" role="button" aria-label="{{item.name}}">
     <view class="case-main">
      <view class="case-name"><text wx:if="{{item.isNew}}" class="case-new">新</text>{{item.name}}</view>
      <view class="case-task">{{item.displayTask}}</view>
@@ -29,7 +28,7 @@
      </view>
     </view>
     <view class="case-side">
-     <button wx:if="{{item.hasProgress}}" class="case-continue" data-id="{{item.id}}" catchtap="openCase">继续</button>
+     <button wx:if="{{item.hasProgress}}" class="case-continue" hover-class="press-feedback" data-id="{{item.id}}" catchtap="openCase">继续</button>
      <text wx:else class="case-arrow"></text>
     </view>
    </view>
@@ -51,13 +50,14 @@
   <view class="shot-heading">
    <view class="shot-title">{{shot.title}}</view>
    <view wx:if="{{shot.logic}}" class="shot-reason"><view class="step-label">为什么这样拍</view><view class="step-body">{{shot.logic}}</view></view>
-   <view class="shot-count"><text class="current-shot">参考镜头 {{shotIndex + 1}} / {{lesson.shots.length}}</text></view>
+   <view class="shot-count"><text class="current-shot">参考镜头 {{shotIndex + 1}} / {{lesson.shots.length}}</text><text class="current-shot">{{shotIndex === lesson.shots.length - 1 ? '最后一镜' : '按顺序看懂整条思路'}}</text></view>
+   <view class="shot-progress" role="progressbar" aria-valuemin="0" aria-valuemax="{{lesson.shots.length}}" aria-valuenow="{{shotIndex + 1}}" aria-label="镜头阅读进度"><view class="shot-progress-fill" style="transform:scaleX({{(shotIndex + 1) / lesson.shots.length}});"></view></view>
   </view>
 
   <view class="shot-nav">
-   <button class="nav-btn" bindtap="previous" disabled="{{shotIndex === 0}}">上一镜</button>
-   <button class="nav-btn" bindtap="replay" disabled="{{!videoSrc}}">重播</button>
-   <button class="nav-btn primary-btn" bindtap="next" disabled="{{shotIndex === lesson.shots.length - 1}}">下一镜</button>
+   <button class="nav-btn" hover-class="press-feedback" bindtap="previous" disabled="{{shotIndex === 0}}">上一镜</button>
+   <button class="nav-btn" hover-class="press-feedback" bindtap="replay" disabled="{{!videoSrc}}">重播</button>
+   <button class="nav-btn primary-btn" hover-class="press-feedback" bindtap="next" disabled="{{shotIndex === lesson.shots.length - 1}}">下一镜</button>
   </view>
 
   <view class="instructions">

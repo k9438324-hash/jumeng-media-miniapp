@@ -1,0 +1,41 @@
+{
+  "checks": [
+    "Native assistant answer has structured headings and emphasis",
+    "Scrolling up suspends following; native return-to-latest button resumes it",
+    "Native regenerate modal appears; cancel preserves conversation without a new request",
+    "Native composer input and action row do not overlap",
+    "Native send control retains a circular touch target",
+    "Native search is visible for a small category, empty state can recover",
+    "Next shot updates native progress and returns to the shot heading"
+  ],
+  "composerRects": [
+    {
+      "left": 0,
+      "top": 611.953125,
+      "width": 430,
+      "height": 124.046875
+    },
+    {
+      "left": 36,
+      "top": 631.953125,
+      "width": 358,
+      "height": 36.046875
+    },
+    {
+      "left": 22,
+      "top": 678,
+      "width": 386,
+      "height": 54
+    }
+  ],
+  "scope": "native WeChat simulator, isolated mock data; no phone acceptance",
+  "screenshotDate": "2026-11-01",
+  "deliveryDate": "2026-11-02",
+  "nodeTests": {
+    "passed": 36,
+    "failed": 0,
+    "skipped": 0
+  },
+  "nativeCompile": "passed",
+  "data": "isolated mock account; no real student data; no paid AI call"
+}

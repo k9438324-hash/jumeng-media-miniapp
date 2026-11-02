@@ -7,4 +7,6 @@ page, .jumeng-theme {
   --size-nav:30rpx; --size-title:52rpx; --size-section:36rpx; --size-body:30rpx; --size-help:28rpx; --size-small:24rpx;
   --video-bg:#141413; --button-text:#F5F1E8;
   --page-gutter:40rpx; --tap-size:88rpx; --line-body:1.65; --line-title:1.35;
+  --motion-fast:140ms; --motion-standard:220ms;
 }
+@media (prefers-reduced-motion:reduce) { page,.jumeng-theme { --motion-fast:0ms;--motion-standard:0ms; } }

@@ -20,3 +20,9 @@ button.primary[disabled] { background:var(--select);color:var(--ink-3); }
 .skeleton.short { width:55%; }
 
 .brand-heading { display:flex;align-items:center;min-height:88rpx;margin-bottom:24rpx; }
+button { transition:transform var(--motion-fast),opacity var(--motion-fast),background var(--motion-fast); }
+.press-feedback { opacity:.72;transform:scale(.98); }
+.skeleton { position:relative;overflow:hidden; }
+.skeleton::after { content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,var(--bg),transparent);transform:translateX(-100%);animation:skeleton-sweep 1.4s ease-in-out infinite; }
+@keyframes skeleton-sweep { to { transform:translateX(100%); } }
+@media (prefers-reduced-motion:reduce) { .skeleton::after { animation:none; }.press-feedback { transform:none; } }

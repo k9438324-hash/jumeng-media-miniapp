@@ -1,5 +1,5 @@
 <view class="tab-bar jumeng-theme">
- <view wx:for="{{list}}" wx:key="pagePath" class="tab-item {{selected === index ? 'active' : ''}}" data-index="{{index}}" data-path="{{item.pagePath}}" bindtap="switchTab" role="button" aria-label="{{item.text}}" aria-selected="{{selected === index}}">
+ <view wx:for="{{list}}" wx:key="pagePath" class="tab-item {{selected === index ? 'active' : ''}}" hover-class="tab-pressed" data-index="{{index}}" data-path="{{item.pagePath}}" bindtap="switchTab" role="button" aria-label="{{item.text}}" aria-selected="{{selected === index}}">
   <text class="tab-text">{{item.text}}</text>
   <view class="tab-mark"></view>
  </view>

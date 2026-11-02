@@ -1,8 +1,9 @@
 <view class="account-page">
  <view class="brand-heading"><brand-menu items="{{menuItems}}" busy="{{loading}}" bind:command="menuCommand" /></view>
  <view class="title">会员与使用</view>
- <view class="muted">查看 AI 权益和调用记录</view>
- <button wx:if="{{!account}}" class="account-refresh" bindtap="refresh" disabled="{{loading}}">{{loading ? '正在查询…' : '登录并查看'}}</button>
+ <view class="muted">清楚知道，还能用多少次。</view>
+ <view wx:if="{{loading}}" class="account-loading" aria-label="正在查询会员额度"><view class="skeleton short"></view><view class="loading-ring skeleton"></view><view class="skeleton"></view><view class="skeleton short"></view></view>
+ <view wx:elif="{{!account}}" class="account-welcome"><view class="account-welcome-title">登录后，查看你的 AI 权益</view><view class="muted">套餐额度、今日可用次数和使用记录，都在这里。</view><button class="account-refresh" hover-class="press-feedback" bindtap="refresh">登录并查看</button></view>
  <view wx:if="{{error}}" class="notice" role="alert">{{error}}</view>
  <block wx:if="{{account}}">
   <view class="mode">{{modeLabel}}</view>
@@ -11,17 +12,16 @@
    <view class="subtitle">{{account.membership ? account.membership.label : 'AI 会员'}}</view>
    <view wx:if="{{account.membership}}" class="muted">有效至 {{expiresLabel}}（北京时间）</view>
    <view wx:else class="muted">请联系课程老师开通 AI 权益</view>
-   <view class="quota-grid">
-    <view class="quota-item"><quota-ring percent="{{quota.percent}}" label="{{quota.label}}" /><view class="quota-caption">{{account.remaining}} / {{account.membership ? account.membership.quota : 0}} 次剩余</view><view class="help">本期已用 {{account.membership ? account.membership.used : 0}} 次</view></view>
-    <view class="quota-item"><quota-ring percent="{{quota.dailyPercent}}" label="今日剩余" /><view class="quota-caption">今日还可用 {{quota.todayRemaining}} 次</view><view class="help">已用 {{account.todayUsed}} / 上限 {{account.dailyLimit}} 次</view></view>
-   </view>
-   <view class="help">圆环显示剩余比例；今日实际可用次数同时受套餐与每日上限限制。每日用量按北京时间零点重新计算，套餐次数不会每日重置。</view>
+   <view class="quota-summary"><quota-ring percent="{{quota.percent}}" label="{{quota.label}}" /><view class="quota-numbers"><view class="quota-caption">套餐剩余</view><view class="quota-amount">{{account.remaining}}<text class="quota-unit"> 次</text></view><view class="help">共 {{account.membership ? account.membership.quota : 0}} 次 · 已用 {{account.membership ? account.membership.used : 0}} 次</view></view></view>
+   <view class="daily-quota"><quota-ring percent="{{quota.dailyPercent}}" label="今日剩余" compact="{{true}}" /><text>今日还可用 {{quota.todayRemaining}} 次</text><text class="help daily-limit">上限 {{account.dailyLimit}} 次</text></view>
   </view>
-  <view class="help">一次新请求扣 1 次；失败或主动停止仍计次，重新生成另计。网络恢复时同一请求不重复扣次。以上为调用次数，不是 token 或人民币账单。</view>
+  <button class="rules-toggle" hover-class="press-feedback" bindtap="toggleRules" aria-expanded="{{rulesOpen}}">计次与重置规则<text>{{rulesOpen ? '收起 −' : '展开 +'}}</text></button>
+  <view wx:if="{{rulesOpen}}" class="help usage-rules">一次新请求扣 1 次；失败或主动停止仍计次，重新生成另计。同一请求网络恢复不重复扣次。每日上限按北京时间零点重新计算，套餐不会每日重置。今日可用同时受套餐剩余与每日上限限制。这里是调用次数，不是 token 或金额。</view>
   <view wx:if="{{account.status !== 'active'}}" class="notice">{{account.status === 'expired' ? 'AI 权益已到期' : account.status === 'exhausted' ? '套餐额度已用完' : '尚未开通 AI 权益'}}，请联系课程老师处理。历史回答仍可查看。</view>
   <view class="subtitle records-title">最近使用记录</view>
-  <view class="help">最近 50 条，时间为北京时间；旧版本未记入流水的调用不在此列表。</view>
+  <view class="help">北京时间；先显示最近 5 条。</view>
   <view wx:if="{{!records.length}}" class="empty-records muted">暂无使用记录</view>
-  <view wx:for="{{records}}" wx:key="id" class="record"><view>{{item.time}} · {{item.mode}}</view><view class="muted">{{item.status}} · 消耗 {{item.charged}} 次</view></view>
+  <block wx:for="{{records}}" wx:key="id"><view wx:if="{{allRecords || index < 5}}" class="record"><view>{{item.time}} · {{item.mode}}</view><view class="muted">{{item.status}} · 消耗 {{item.charged}} 次</view></view></block>
+  <button wx:if="{{records.length > 5}}" class="rules-toggle" hover-class="press-feedback" bindtap="toggleRecords">{{allRecords ? '收起记录' : '查看最近 ' + records.length + ' 条记录'}}</button>
  </block>
 </view>

@@ -7,6 +7,18 @@
 .records-title { margin:40rpx 0 16rpx; }
 .record { padding:24rpx 0;border-bottom:1px solid var(--line);font-size:28rpx;line-height:1.65; }
 .empty-records { padding:32rpx 0; }
-.quota-grid { display:flex;justify-content:space-around;gap:24rpx;flex-wrap:wrap;margin:40rpx 0 32rpx; }
-.quota-item { display:flex;flex-direction:column;align-items:center;text-align:center;gap:12rpx; }
+.quota-summary { display:flex;align-items:center;justify-content:center;gap:40rpx;margin:40rpx 0; }
+.quota-numbers { min-width:0; }
+.quota-amount { font-family:var(--font-title);font-size:64rpx;line-height:1.35;font-variant-numeric:tabular-nums;color:var(--ink);margin:8rpx 0; }
+.quota-unit { font-family:var(--font-body);font-size:26rpx;color:var(--ink-2); }
+.daily-quota { display:flex;align-items:center;gap:16rpx;background:var(--surface);padding:24rpx;border-radius:var(--radius-panel);font-size:28rpx;flex-wrap:wrap; }
+.daily-limit { margin-left:auto; }
+.rules-toggle { width:100%;justify-content:space-between;text-align:left;padding:16rpx 0;min-height:88rpx;font-size:26rpx;color:var(--ink-2); }
+.usage-rules { padding-bottom:24rpx; }
+.account-welcome { padding:56rpx 0 24rpx; }
+.account-welcome-title { font-family:var(--font-title);font-size:36rpx;margin-bottom:16rpx; }
+.account-loading { padding:32rpx 0; }
+.loading-ring { width:224rpx;height:224rpx;border-radius:50%;margin:40rpx auto; }
+.account-refresh { width:100%; }
+@media (max-width:350px) { .quota-summary { gap:24rpx; }.quota-amount { font-size:56rpx; } }
 .quota-caption { font-size:26rpx;color:var(--ink); }

@@ -4,6 +4,7 @@ import { Context, Conversation, Job, WorkflowMode } from '../../domain';
 import { course, refreshCourse } from '../../services/course';
 import { Account, quotaView } from '../../services/account';
 import { workflowModes, workflowLabel } from '../../services/workflows';
+import { messageNodes, RichNode } from '../../services/message-format';
 const prefix = 'jumeng:chat:' + config.authMode + ':' + config.apiBase + ':';
 type RetryAction = 'init' | 'send' | 'poll' | 'history' | 'stop' | 'load';
 interface PendingSend { conversationId: string; requestId: string; content: string; skill?: WorkflowMode }
@@ -15,15 +16,17 @@ Page({
     error: '', historyOpen: false, history: [] as Pick<Conversation, 'id' | 'title' | 'updatedAt'>[],
     isMock: false, errorKind: 'error', sessionExpired: false, keyboardHeight: 0, scrollTarget: '', canRegenerate: false,
     composerHeight: 180,
+    inputFocused: false, inputCursor: 0, followOutput: true, copiedIndex: '',
+    messageNodes: [] as RichNode[][], partialNodes: [] as RichNode[],
     quota: null as ReturnType<typeof quotaView> | null,
     workflowModes, workflowIndex: 0, activeWorkflow: '', messageSkills: [] as string[],
     messageMockFlags: [] as boolean[],
     historyGroups: [] as { label: string; items: (Pick<Conversation,'id'|'title'|'updatedAt'> & {timeLabel: string})[] }[],
     examples: [
-      { label: '开头太平，帮我留住观众', text: '帮我优化这个视频开头：' },
-      { label: '视频拍好了，帮我起标题', text: '帮我写标题与封面文案。视频内容是：' },
-      { label: '这段口播，哪里不顺', text: '帮我检查这段口播的逻辑：' },
-      { label: '这个选题，客户会在意吗', text: '帮我评估这个选题的内容价值：' },
+      { label: '优化开头', desc: '找到现场最值得先说的事', text: '帮我优化这个视频开头：' },
+      { label: '标题与封面', desc: '让文字对上视频里的内容', text: '帮我写标题与封面文案。视频内容是：' },
+      { label: '检查口播', desc: '看看哪里接不上、说不顺', text: '帮我检查这段口播的逻辑：' },
+      { label: '评估选题', desc: '看看这件事吸引哪些客户', text: '帮我评估这个选题的内容价值：' },
     ],
   },
   visible: false,
@@ -33,6 +36,7 @@ Page({
   action: 'init' as RetryAction,
   loadId: '',
   quotaRequest: 0,
+  lastScrollTop: 0,
   openAccount() {
     wx.setStorageSync('jumeng:account:open', true);
     wx.switchTab({ url: '/pages/account/index' });
@@ -126,12 +130,24 @@ Page({
     if (currentEpoch !== this.epoch) return;
     const lesson = course.lessons.find(l => l.id === c.context?.lessonId);
     const category = lesson ? course.categories.find(cat => cat.lessonIds.includes(lesson.id)) : undefined;
-    this.setData({ conversation: c, workflowIndex: Math.max(0, workflowModes.findIndex(item => item.id === c.skillMode)), activeWorkflow: workflowLabel(c.activeSkill), messageSkills: c.messages.map(m => workflowLabel(m.skill)), messageMockFlags: c.messages.map(m => m.content.startsWith('【模拟结果')), contextLabel: lesson ? (category ? category.name : lesson.name) + ' · 第' + (c.context!.shotIndex + 1) + '镜 ' + lesson.shots[c.context!.shotIndex].title : '' });
-    this.scrollToEnd();
+    const switched = this.data.conversation?.id !== c.id;
+    this.setData({ conversation: c, messageNodes: c.messages.map(m => m.role === 'assistant' ? messageNodes(m.content) : []), workflowIndex: Math.max(0, workflowModes.findIndex(item => item.id === c.skillMode)), activeWorkflow: workflowLabel(c.activeSkill), messageSkills: c.messages.map(m => workflowLabel(m.skill)), messageMockFlags: c.messages.map(m => m.content.startsWith('【模拟结果')), contextLabel: lesson ? (category ? category.name : lesson.name) + ' · 第' + (c.context!.shotIndex + 1) + '镜 ' + lesson.shots[c.context!.shotIndex].title : '' });
+    this.scrollToEnd(switched);
     wx.setStorageSync(prefix + 'current', id);
   },
-  input(e: WechatMiniprogram.CustomEvent<{ value: string }>) { this.setData({ input: e.detail.value }); this.composerSettled(); },
-  scrollToEnd() { this.setData({ scrollTarget: '' }, () => this.setData({ scrollTarget: 'messages-end' })); },
+  input(e: WechatMiniprogram.CustomEvent<{ value: string; cursor?: number }>) { this.setData({ input: e.detail.value, inputCursor: e.detail.cursor === undefined ? e.detail.value.length : e.detail.cursor }); this.composerSettled(); },
+  scrollToEnd(force = false) {
+    if (!force && !this.data.followOutput) return;
+    if (force) this.lastScrollTop = 0;
+    this.setData({ followOutput: true, scrollTarget: '' }, () => this.setData({ scrollTarget: 'messages-end' }));
+  },
+  messageScroll(e: WechatMiniprogram.CustomEvent<{ scrollTop: number; scrollHeight: number }>) {
+    const { scrollTop } = e.detail;
+    if (scrollTop < this.lastScrollTop - 4) this.setData({ followOutput: false });
+    this.lastScrollTop = scrollTop;
+  },
+  messageBottom() { if (!this.data.followOutput) this.setData({ followOutput: true }); },
+  latestMessages() { this.scrollToEnd(true); },
   composerSettled() {
     if (!wx.createSelectorQuery) return;
     wx.createSelectorQuery().in(this).select('.composer').boundingClientRect(rect => {
@@ -143,15 +159,20 @@ Page({
     this.composerSettled(); this.scrollToEnd();
   },
   inputFocus() { this.scrollToEnd(); this.composerSettled(); },
-  inputBlur() { this.setData({ keyboardHeight: 0 }); this.composerSettled(); },
+  inputBlur() { this.setData({ keyboardHeight: 0, inputFocused: false }); this.composerSettled(); },
+  async confirmRegenerate() {
+    return new Promise<boolean>(resolve => wx.showModal({ title: '重新生成回答', content: '将发送一次新请求，消耗 1 次 AI 额度。当前回答会保留。', confirmText: '重新生成', cancelText: '取消', success: result => resolve(result.confirm), fail: () => resolve(false) }));
+  },
   async regenerate() {
     const last = this.data.conversation?.messages.filter(m => m.role === 'user').pop();
     if (!last || this.data.busy) return;
+    if (!await this.confirmRegenerate() || this.data.busy || this.data.connecting) return;
     this.setData({ input: last.content, canRegenerate: false }); await this.send();
   },
   example(e: WechatMiniprogram.TouchEvent) {
     if (this.data.busy || this.data.connecting) return;
-    this.setData({ input: e.currentTarget.dataset.text, workflowIndex: 0 }); this.composerSettled();
+    const text = String(e.currentTarget.dataset.text || '');
+    this.setData({ input: text, workflowIndex: 0, inputFocused: false }, () => this.setData({ inputFocused: true, inputCursor: text.length })); this.composerSettled();
   },
   chooseWorkflow(e: WechatMiniprogram.CustomEvent<{ value: string }>) {
     if (this.data.busy || this.data.connecting) return;
@@ -169,14 +190,17 @@ Page({
     let userContent = '';
     for (let i = index - 1; i >= 0; i--) { if (msgs[i].role === 'user') { userContent = msgs[i].content; break; } }
     if (!userContent) return;
-    this.setData({ input: userContent, canRegenerate: false });
+    const conversationId = this.data.conversation?.id;
+    if (!await this.confirmRegenerate() || this.data.busy || this.data.connecting || conversationId !== this.data.conversation?.id) return;
+    const originalMethod = workflowModes.findIndex(item => item.id === target.skill);
+    this.setData({ input: userContent, canRegenerate: false, ...(originalMethod >= 0 ? { workflowIndex: originalMethod } : {}) });
     await this.send();
   },
   async send() {
     if (this.data.busy || this.data.connecting || !this.data.input.trim() || !this.data.conversation) return;
     const pending: PendingSend = { conversationId: this.data.conversation.id, requestId: 'req-' + Date.now() + '-' + Math.random().toString(36).slice(2), content: this.data.input.trim(), skill: workflowModes[this.data.workflowIndex].id };
     wx.setStorageSync(prefix + 'pendingSend', pending);
-    this.setData({ busy: true, error: '', partial: '', status: '正在提交…' });
+    this.setData({ busy: true, error: '', partial: '', partialNodes: [], status: '正在提交…', followOutput: true, inputFocused: false });
     await this.submit(pending);
   },
   async submit(pending: PendingSend) {
@@ -207,7 +231,7 @@ Page({
       const job = await api<Job>('/generations/' + requestedJob);
       if (requestedJob !== this.jobId || job.conversationId !== this.data.conversation?.id) return;
       this.setData({ isMock: job.mode === 'mock', modeLabel: job.mode === 'mock' ? '模拟模式 · 未调用真实 AI' : 'DeepSeek · 文字辅助', canRegenerate: job.status === 'stopped', activeWorkflow: workflowLabel(job.skill) });
-      this.setData({ partial: job.text, error: '', status: job.status === 'running' ? '正在生成…' : job.status === 'stopped' ? '已停止生成' : job.status === 'failed' ? '生成失败' : '已完成' });
+      this.setData({ partial: job.text, partialNodes: messageNodes(job.text), error: '', status: job.status === 'running' ? '正在生成…' : job.status === 'stopped' ? '已停止生成' : job.status === 'failed' ? '生成失败' : '已完成' });
       this.scrollToEnd();
       if (job.status === 'running') {
         this.setData({ busy: true });
@@ -252,7 +276,7 @@ Page({
     try {
       const c = await api<Conversation>('/conversations', 'POST', {});
       wx.setStorageSync(prefix + 'current', c.id); wx.removeStorageSync(prefix + 'job'); wx.removeStorageSync(prefix + 'pendingSend');
-      this.jobId = ''; this.setData({ conversation: c, contextLabel: '', partial: '', input: '', status: '', connecting: false, historyOpen: false, canRegenerate: false, workflowIndex: 0, activeWorkflow: '', messageSkills: [] });
+      this.jobId = ''; this.setData({ conversation: c, contextLabel: '', partial: '', partialNodes: [], input: '', status: '', connecting: false, historyOpen: false, canRegenerate: false, workflowIndex: 0, activeWorkflow: '', messageSkills: [], messageNodes: [], followOutput: true });
     } catch (e) { this.fail(e, 'init'); }
   },
   async showHistory() {
@@ -278,6 +302,6 @@ Page({
   },
   copy(e: WechatMiniprogram.TouchEvent) {
     const text = e.currentTarget.dataset.partial ? this.data.partial : this.data.conversation?.messages[Number(e.currentTarget.dataset.index)]?.content;
-    if (text) wx.setClipboardData({ data: text });
+    if (text) wx.setClipboardData({ data: text, success: () => this.setData({ copiedIndex: e.currentTarget.dataset.partial ? 'partial' : String(e.currentTarget.dataset.index) }) });
   },
 });

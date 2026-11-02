@@ -6,8 +6,10 @@ function time(value: number) {
 }
 Page({
   data: {
-    menuItems: [{ label: '登录 / 刷新会员状态', action: 'refresh', guarded: true }, { label: '老师后台', action: 'teacher', guarded: true }], account: null as Account | null, quota: null as ReturnType<typeof quotaView> | null, loading: false, error: '', modeLabel: '', statusLabel: '', expiresLabel: '', records: [] as { id: string; time: string; status: string; mode: string; charged: number }[] },
+    menuItems: [{ label: '登录 / 刷新会员状态', action: 'refresh', guarded: true }, { label: '老师后台', action: 'teacher', guarded: true }], account: null as Account | null, quota: null as ReturnType<typeof quotaView> | null, loading: false, error: '', modeLabel: '', statusLabel: '', expiresLabel: '', rulesOpen: false, allRecords: false, records: [] as { id: string; time: string; status: string; mode: string; charged: number }[] },
   visible: false,
+  toggleRules() { this.setData({ rulesOpen: !this.data.rulesOpen }); },
+  toggleRecords() { this.setData({ allRecords: !this.data.allRecords }); },
   openTeacher() { if (this.data.loading) return; wx.navigateTo({ url: '/pages/teacher/index' }); },
   menuCommand(e: WechatMiniprogram.CustomEvent<{ action: string }>) {
     if (e.detail.action === 'teacher') { this.openTeacher(); return; }

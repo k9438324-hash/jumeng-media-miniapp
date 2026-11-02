@@ -12,3 +12,8 @@
 .menu-item:last-child { border-bottom:0; }
 .menu-item::after { border:0; }
 .menu-item[disabled] { color:var(--ink-3); }
+.menu-chevron { transition:transform var(--motion-fast); }
+.menu-panel { transform-origin:24rpx 0;animation:menu-enter var(--motion-standard) ease-out; }
+.menu-pressed { opacity:.7; }
+@keyframes menu-enter { from { opacity:0;transform:translateY(-8rpx) scale(.98); } to { opacity:1;transform:translateY(0) scale(1); } }
+@media (prefers-reduced-motion:reduce) { .menu-panel { animation:none; } }
