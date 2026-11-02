@@ -11,7 +11,7 @@ set -euo pipefail
 # 你的域名，例如 api.jumeng.com
 DOMAIN="${DOMAIN:-}"
 # 你的邮箱（Let's Encrypt 证书通知用，可选）
-EMAIL="${EMAIL:-admin@example.com}"
+EMAIL="${EMAIL:-}"
 # 代码仓库地址（默认私有仓库，需要服务器有访问权限）
 REPO_URL="${REPO_URL:-https://github.com/k9438324-hash/jumeng-media-miniapp.git}"
 # 部署目录
@@ -34,6 +34,10 @@ if [ -z "$DOMAIN" ]; then
   echo "   或先编辑本脚本顶部的 DOMAIN= 字段。"
   exit 1
 fi
+if [[ ! "$DOMAIN" =~ ^[a-zA-Z0-9]([a-zA-Z0-9.-]*[a-zA-Z0-9])?$ ]] || [[ "$DOMAIN" != *.* ]]; then
+  echo "❌ DOMAIN 必须是实际 API 域名，不能包含协议、路径或空格。"
+  exit 1
+fi
 
 echo "✅ 目标域名：$DOMAIN"
 
@@ -50,6 +54,7 @@ if ! command -v node >/dev/null 2>&1; then
   apt-get install -y nodejs >/dev/null
 fi
 node -v
+node -e 'const [major,minor]=process.versions.node.split(".").map(Number);if(major<24 || (major===24 && minor<16)){console.error("需要 Node.js 24.16 或更高版本，请先更新服务器运行环境");process.exit(1)}'
 echo "✅ 基础环境就绪"
 
 # ---------- 3. 拉取代码并构建 ----------
@@ -59,7 +64,7 @@ if [ ! -d "$APP_DIR" ]; then
   git clone "$REPO_URL" "$APP_DIR"
 fi
 cd "$APP_DIR"
-git pull origin main 2>/dev/null || true
+git pull --ff-only origin main
 npm ci
 npm run build
 echo "✅ 代码构建完成"
@@ -70,15 +75,16 @@ echo ">>> [3/6] 生成环境变量文件 ..."
 if [ ! -f "$ENV_FILE" ]; then
   cat > "$ENV_FILE" <<EOF
 NODE_ENV=production
-HOST=0.0.0.0
+HOST=127.0.0.1
 PORT=8787
 AUTH_MODE=wechat
 AI_MODE=deepseek
-DB_PATH=/app/data/jumeng.sqlite
-WECHAT_APP_ID=在这里填AppID
-WECHAT_APP_SECRET=在这里填AppSecret（不要提交到仓库）
-WECHAT_ALLOWED_OPENIDS=学员openid1,学员openid2
-DEEPSEEK_API_KEY=在这里填DeepSeekKey
+DB_PATH=/opt/jumeng-data/jumeng.sqlite
+WECHAT_APP_ID=wx0d79451e6dd4b6b9
+WECHAT_APP_SECRET=
+WECHAT_ALLOWED_OPENIDS=
+DEEPSEEK_API_KEY=
+TEACHER_PASSWORD_HASH=
 DEEPSEEK_BASE_URL=https://api.deepseek.com
 DEEPSEEK_MODEL=deepseek-flash
 DAILY_REQUEST_LIMIT=30
@@ -90,6 +96,15 @@ EOF
   echo ""
   read -r -p "   填好并保存后，按回车继续（或 Ctrl+C 退出先填写）..." _
 fi
+node --env-file="$ENV_FILE" --input-type=module -e '
+import { loadConfig } from "./dist/server/config.js";
+import { existsSync } from "node:fs";
+const config=loadConfig(process.env);
+if(config.authMode!=="wechat" || config.aiMode!=="deepseek")throw Error("部署必须使用真实微信身份和真实AI");
+if(!/^[a-f0-9]{64}$/i.test(config.teacherPasswordHash || ""))throw Error("请先设置老师后台密码的SHA256摘要 TEACHER_PASSWORD_HASH");
+if(!config.allowedOpenids.length && !existsSync(config.dbPath))throw Error("首次部署请先在WECHAT_ALLOWED_OPENIDS加入管理员微信OpenID，避免所有账号均无法进入");
+console.log("生产配置校验通过（未输出密钥）");
+'
 echo "✅ 环境变量文件就绪"
 
 # ---------- 5. 配置 Nginx 反向代理 + HTTPS ----------
@@ -113,7 +128,6 @@ server {
 }
 EOF
 ln -sf "/etc/nginx/sites-available/jumeng" /etc/nginx/sites-enabled/jumeng
-rm -f /etc/nginx/sites-enabled/default
 nginx -t && systemctl reload nginx
 echo "✅ Nginx 已配置"
 
@@ -121,9 +135,12 @@ echo ""
 echo ">>> [5/6] 签发 HTTPS 证书 ..."
 # 安装 certbot
 apt-get install -y certbot python3-certbot-nginx >/dev/null
-certbot --nginx -d "$DOMAIN" --email "$EMAIL" --agree-tos --non-interactive --redirect || {
+CERTBOT_CONTACT=(--register-unsafely-without-email)
+if [ -n "$EMAIL" ]; then CERTBOT_CONTACT=(--email "$EMAIL"); fi
+certbot --nginx -d "$DOMAIN" "${CERTBOT_CONTACT[@]}" --agree-tos --non-interactive --redirect || {
   echo "⚠️  证书签发失败，请确认域名已解析到本服务器 IP，再手动运行："
   echo "   certbot --nginx -d $DOMAIN --redirect"
+  exit 1
 }
 echo "✅ HTTPS 配置完成"
 
@@ -152,7 +169,8 @@ systemctl daemon-reload
 systemctl enable jumeng
 systemctl restart jumeng
 sleep 2
-systemctl status jumeng --no-pager || true
+systemctl is-active --quiet jumeng
+curl --fail --silent --show-error "https://$DOMAIN/health"
 
 echo ""
 echo "=============================================="

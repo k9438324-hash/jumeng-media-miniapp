@@ -2,6 +2,12 @@ node_modules
 dist
 .git
 server/.env
+.env
+.env.*
+**/.env
+**/.env.*
+!**/.env.example
+delivery
 server/data
 *.sqlite*
 .pdf-read-temp
