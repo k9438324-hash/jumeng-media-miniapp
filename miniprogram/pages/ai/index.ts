@@ -2,7 +2,6 @@ import { api, sessionLabel, ApiError } from '../../services/api';
 import { config } from '../../config';
 import { Context, Conversation, Job, WorkflowMode } from '../../domain';
 import { course, refreshCourse } from '../../services/course';
-import { Account, quotaView } from '../../services/account';
 import { workflowModes, workflowLabel, publishedWorkflowModes } from '../../services/workflows';
 import { messageNodes, RichNode } from '../../services/message-format';
 const prefix = 'jumeng:chat:' + config.authMode + ':' + config.apiBase + ':';
@@ -18,7 +17,6 @@ Page({
     composerHeight: 180,
     inputFocused: false, inputCursor: 0, followOutput: true, copiedIndex: '',
     messageNodes: [] as RichNode[][], partialNodes: [] as RichNode[],
-    quota: null as ReturnType<typeof quotaView> | null,
     workflowModes, workflowIndex: 0, activeWorkflow: '', messageSkills: [] as string[],
     messageMockFlags: [] as boolean[],
     historyGroups: [] as { label: string; items: (Pick<Conversation,'id'|'title'|'updatedAt'> & {timeLabel: string})[] }[],
@@ -35,22 +33,7 @@ Page({
   jobId: '',
   action: 'init' as RetryAction,
   loadId: '',
-  quotaRequest: 0,
   lastScrollTop: 0,
-  openAccount() {
-    wx.setStorageSync('jumeng:account:open', true);
-    wx.switchTab({ url: '/pages/account/index' });
-  },
-  async refreshQuota(requestEpoch?: number) {
-    const epoch = requestEpoch === undefined ? this.epoch : requestEpoch;
-    const request = ++this.quotaRequest;
-    try {
-      const account = await api<Account>('/account');
-      if (epoch === this.epoch && request === this.quotaRequest) this.setData({ quota: quotaView(account) });
-    } catch {
-      if (epoch === this.epoch && request === this.quotaRequest) this.setData({ quota: null });
-    }
-  },
   openTeacher() { if (this.data.busy || this.data.connecting) return; wx.navigateTo({ url: '/pages/teacher/index' }); },
   menuCommand(e: WechatMiniprogram.CustomEvent<{ action: string }>) {
     if (e.detail.action === 'teacher') { this.openTeacher(); return; }
@@ -63,7 +46,7 @@ Page({
       this.getTabBar().setData({ selected: index });
     }
   },
-  onHide() { this.visible = false; this.epoch++; clearTimeout(this.timer); this.setData({ keyboardHeight: 0, quota: null }); },
+  onHide() { this.visible = false; this.epoch++; clearTimeout(this.timer); this.setData({ keyboardHeight: 0 }); },
   onUnload() { this.visible = false; this.epoch++; clearTimeout(this.timer); },
   fail(error: unknown, action: RetryAction) {
     this.action = action;
@@ -73,7 +56,7 @@ Page({
   },
   async initialize() {
     const epoch = ++this.epoch;
-    this.setData({ connecting: true, error: '', quota: null });
+    this.setData({ connecting: true, error: '' });
     try {
       await refreshCourse().catch(()=>{});
       if(epoch!==this.epoch)return;
@@ -121,7 +104,6 @@ Page({
       }
       if (epoch !== this.epoch) return;
       this.setData({ modeLabel: sessionLabel(), isMock: sessionLabel().startsWith('模拟模式'), connecting: false });
-      void this.refreshQuota(epoch);
       this.composerSettled();
       const pendingSend = wx.getStorageSync(prefix + 'pendingSend') as PendingSend | undefined;
       if (pendingSend && pendingSend.conversationId === id) { this.setData({ busy: true }); await this.submit(pendingSend); return; }
@@ -220,7 +202,6 @@ Page({
       wx.setStorageSync(prefix + 'job', { conversationId: pending.conversationId, id: job.id });
       wx.removeStorageSync(prefix + 'pendingSend');
       this.setData({ input: '', error: '', busy: true, activeWorkflow: job.skillLabel || workflowLabel(job.skill,this.data.workflowModes) });
-      this.setData({ quota: null }); void this.refreshQuota();
       await this.loadConversation(pending.conversationId);
       await this.poll();
     } catch (e) {
@@ -228,7 +209,7 @@ Page({
       // 只有明确被服务端拒绝才清除请求；网络超时保留 requestId，重试不会重复扣额。
       const rejected = e instanceof ApiError && e.status >= 400 && e.status < 500;
       if (rejected) wx.removeStorageSync(prefix + 'pendingSend');
-      this.setData({ busy: false, quota: null }); void this.refreshQuota(); this.fail(e, 'send');
+      this.setData({ busy: false }); this.fail(e, 'send');
     }
   },
   async poll() {

@@ -5,7 +5,6 @@
 .ai-heading { display:flex;align-items:center;justify-content:space-between;gap:16rpx; }
 .ai-brand { display:flex;align-items:center;gap:12rpx;min-width:0; }
 .ai-title { font-family:var(--font-title);font-size:36rpx;font-weight:600;white-space:nowrap; }
-.quota-entry { display:flex;align-items:center;gap:12rpx;padding:8rpx 0;min-height:88rpx;font-size:24rpx;color:var(--ink-2); }
 .workflow-picker { display:flex;align-items:center;gap:12rpx;min-height:88rpx;padding:8rpx 4rpx;font-size:26rpx;color:var(--ink);border-radius:var(--radius-small); }
 .skill-label { margin-left:16rpx;color:var(--ink-2); }
 
@@ -59,7 +58,7 @@
 .example-desc { font-size:24rpx;color:var(--ink-2);line-height:1.5; }
 .composer-box { display:flex;align-items:flex-end;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-panel);padding:16rpx 24rpx; }
 .composer-tools { display:flex;align-items:center;gap:12rpx;padding-top:8rpx; }
-.composer-cost { flex:1;text-align:right;font-size:24rpx;color:var(--ink-2); }
+.composer-tools picker { flex:1;min-width:0; }
 .composer-input { flex:1;min-width:0;min-height:48rpx;max-height:214rpx;padding:8rpx 0;background:transparent;font-size:30rpx;line-height:1.65;font-weight:500; }
 .input-placeholder { color:var(--ink-3); }
 .send-btn { flex-shrink:0;width:88rpx;height:88rpx;box-sizing:border-box;border-radius:50%;background:var(--ink);display:flex;align-items:center;justify-content:center; }
@@ -90,6 +89,6 @@
 .network-notice text { flex:1;min-width:0; }
 .network-notice .text-button { flex-shrink:0; }
 @media (max-width:350px) { .ai-top { padding-left:32rpx;padding-right:32rpx; }  }
-@media (max-width:350px) { .ai-title { font-size:30rpx; }.composer-cost { font-size:24rpx; }.example-line { padding:20rpx 16rpx; }.empty-title { font-size:38rpx; } }
+@media (max-width:350px) { .ai-title { font-size:30rpx; }.example-line { padding:20rpx 16rpx; }.empty-title { font-size:38rpx; } }
 @media (max-height:600px) { .empty { padding-top:32rpx; } .empty-mark { margin-bottom:24rpx; } }
 @media (prefers-reduced-motion:reduce) { .history-sheet { animation:none; } }

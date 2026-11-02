@@ -18,21 +18,3 @@ test('额度圆环使用真实比例，处理到期、零额度和每日上限',
   q = quotaView({ ...account, membership: null, remaining: 0 });
   assert.equal(q.percent, 0);
 });
-
-test('AI 额度查询失败清空余额，迟到响应不覆盖新页面，圆环进入会员', async () => {
-  const requests = [];
-  // 使用模块注入避免登录与额外网络，单独验证页面生命周期。
-  const { resolve } = await import('node:path');
-  const p = harness('miniprogram/pages/ai/index.js', {}, {
-    [resolve('miniprogram/services/api.js')]: { api: () => new Promise((ok, fail) => requests.push({ ok, fail })), sessionLabel: () => '', ApiError: class extends Error {} },
-  });
-  const account = { membership: { quota: 100 }, status: 'active', remaining: 72, todayUsed: 0, dailyLimit: 30 };
-  const first = p.page.refreshQuota(); requests.shift().ok(account); await first;
-  assert.equal(p.page.data.quota.percent, 72);
-  const late = p.page.refreshQuota(); p.page.onHide(); requests.shift().ok(account); await late;
-  assert.equal(p.page.data.quota, null);
-  const failed = p.page.refreshQuota(); requests.shift().fail(new Error('断网')); await failed;
-  assert.equal(p.page.data.quota, null);
-  p.page.openAccount(); assert.equal(p.storage.get('jumeng:account:open'), true);
-  assert.equal(p.events.at(-1)[1], '/pages/account/index');
-});
