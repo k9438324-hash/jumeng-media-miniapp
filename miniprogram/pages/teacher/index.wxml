@@ -2,12 +2,12 @@
  <view class="teacher-heading"><image class="teacher-logo" src="/assets/jumeng-avatar.png" mode="aspectFit" /><button wx:if="{{!locked}}" class="text-button" bindtap="logout" disabled="{{busy}}">退出后台</button></view>
  <view class="title">老师后台</view>
  <block wx:if="{{locked}}">
-  <view class="muted">输入管理密码，管理 SOP 和学员权益</view>
+  <view class="muted">输入管理密码，管理 SOP、AI Skill 和学员权益</view>
   <view class="password-box"><input password type="text" value="{{password}}" maxlength="64" data-key="password" bindinput="input" bindconfirm="unlock" placeholder="请输入密码" disabled="{{busy}}" /></view>
   <button class="primary enter" bindtap="unlock" disabled="{{busy || !password}}">{{busy ? '正在验证…' : '进入后台'}}</button>
  </block>
  <block wx:else>
-  <view class="sections"><button class="{{tab === 'courses' ? 'selected' : ''}}" data-tab="courses" bindtap="switchSection" disabled="{{busy}}">SOP 管理</button><button class="{{tab === 'students' ? 'selected' : ''}}" data-tab="students" bindtap="switchSection" disabled="{{busy}}">学员与额度</button><button class="text-button" bindtap="refresh" disabled="{{busy}}">刷新</button></view>
+  <view class="sections"><button class="{{tab === 'courses' ? 'selected' : ''}}" data-tab="courses" bindtap="switchSection" disabled="{{busy}}">SOP 管理</button><button class="{{tab === 'skills' ? 'selected' : ''}}" data-tab="skills" bindtap="switchSection" disabled="{{busy}}">AI Skill</button><button class="{{tab === 'students' ? 'selected' : ''}}" data-tab="students" bindtap="switchSection" disabled="{{busy}}">学员与额度</button><button class="text-button" bindtap="refresh" disabled="{{busy}}">刷新</button></view>
   <view wx:if="{{busy}}" class="help">正在处理，请稍候…</view>
   <block wx:if="{{tab === 'courses'}}">
    <block wx:if="{{!activeCourse}}">
@@ -30,6 +30,28 @@
     <button class="outline" bindtap="addShot" disabled="{{busy || activeCourse.lesson.shots.length >= 100}}">增加一个镜头</button>
     <view class="save-actions"><button class="outline" bindtap="saveCourse" disabled="{{busy}}">保存草稿</button><button class="primary" bindtap="saveCourse" data-publish="{{true}}" disabled="{{busy}}">保存并发布</button></view>
     <button wx:if="{{activeCourse.published}}" class="text-button" bindtap="unpublish" disabled="{{busy}}">下架这条 SOP</button>
+   </block>
+  </block>
+  <block wx:elif="{{tab === 'skills'}}">
+   <block wx:if="{{!activeSkill}}">
+    <view class="help skill-help">草稿只有老师可见。发布后，客户重新打开聚梦AI就能同步；新提问使用新版，进行中的回答保持原版。</view>
+    <button class="primary" bindtap="newSkill" disabled="{{busy}}">新增 Skill</button>
+    <button wx:for="{{skills}}" wx:key="id" class="list-row" data-id="{{item.id}}" bindtap="selectSkill" disabled="{{busy}}"><view><view class="item-title">{{item.draft.label}}</view><view class="help">{{item.published ? '已发布 v' + item.version : item.version ? '已停用' : '草稿'}}{{item.changed ? ' · 有未发布修改' : ''}}</view><view class="help">{{item.draft.description}}</view></view><text>›</text></button>
+   </block>
+   <block wx:else>
+    <button class="text-button back-list" bindtap="backToList" disabled="{{busy}}">‹ 返回 Skill 列表</button>
+    <view class="help">{{activeSkill.version ? '最近发布版本 v' + activeSkill.version : '尚未发布'}} · 保存草稿不会影响客户</view>
+    <view class="field"><view class="help">技能名称</view><input value="{{activeSkill.draft.label}}" data-field="label" bindinput="skillInput" maxlength="24" disabled="{{busy}}" placeholder="例如：客户需求诊断" /></view>
+    <view class="field"><view class="help">给客户看的说明</view><textarea auto-height value="{{activeSkill.draft.description}}" data-field="description" bindinput="skillInput" maxlength="120" disabled="{{busy}}" placeholder="说明适合处理什么问题" /></view>
+    <view class="field"><view class="help">自动识别词，用逗号分开；留空则由客户手动选择</view><textarea auto-height value="{{skillKeywords}}" data-field="keywords" bindinput="skillInput" maxlength="1000" disabled="{{busy}}" placeholder="客户需求，需求诊断，装修预算" /></view>
+    <view class="field"><view class="help">点击入口时填入的提问引导</view><textarea auto-height value="{{activeSkill.draft.starter}}" data-field="starter" bindinput="skillInput" maxlength="500" disabled="{{busy}}" placeholder="帮我梳理这个客户的需求：" /></view>
+    <view class="field"><view class="help">执行规则 / Skill 正文（最多16000字）</view><textarea class="skill-instruction" value="{{activeSkill.draft.instruction}}" data-field="instruction" bindinput="skillInput" maxlength="16000" disabled="{{busy}}" placeholder="写清适用场景、所需材料、处理步骤、追问条件、输出格式和自检标准。也可以粘贴完整技能正文。" /></view>
+    <button class="outline" bindtap="importSkill" disabled="{{busy}}">从 Markdown / TXT 文件导入正文</button>
+    <view class="help skill-help">这里只更新文字处理规则。引用文件里的必要内容需合并到正文；脚本、联网、图片或视频识别能力需要另外接入。</view>
+    <view class="field"><view class="help">显示顺序（0–999，数字小的在前）</view><input type="number" value="{{activeSkill.draft.order}}" data-field="order" bindinput="skillInput" disabled="{{busy}}" /></view>
+    <view class="save-actions"><button class="outline" bindtap="saveSkill" disabled="{{busy}}">保存草稿</button><button class="primary" bindtap="saveSkill" data-publish="{{true}}" disabled="{{busy || !activeSkill.draft.label || !activeSkill.draft.instruction}}">发布给客户</button></view>
+    <button wx:if="{{activeSkill.published && activeSkill.id !== 'general'}}" class="text-button" bindtap="unpublishSkill" disabled="{{busy}}">停用这个 Skill</button>
+    <button wx:if="{{activeSkill.version > 1}}" class="text-button" bindtap="restoreSkill" disabled="{{busy}}">恢复上一发布版到草稿</button>
    </block>
   </block>
   <block wx:else>

@@ -1,19 +1,25 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { resolve } from 'node:path';
-import { selectWorkflow, validWorkflowMode, workflows } from '../dist/server/workflows.js';
+import { workflows } from '../dist/server/workflows.js';
+import { Store } from '../dist/server/store.js';
+import { SkillLibrary } from '../dist/server/skill-library.js';
 import { harness } from './mini-harness.mjs';
 
 test('自动分流优先处理请求，续接简短补充，客户端方法与服务端一致', () => {
+  const store=new Store(':memory:');const library=new SkillLibrary(store.db);
+  const selectWorkflow=(text,previous)=>library.select('auto',text,previous).id;
+  try {
   assert.equal(selectWorkflow('帮我检查口播逻辑：“先写标题，再讲开头。”'), 'flow');
   assert.equal(selectWorkflow('这个选题客户会在意吗？'), 'value');
   assert.equal(selectWorkflow('帮我起标题：冰箱放不下'), 'title');
   assert.equal(selectWorkflow('已经拍完，别让我补拍', 'hook'), 'hook');
   assert.equal(selectWorkflow('手机站哪里，怎么拍？', 'title'), 'general');
   assert.equal(selectWorkflow('你好'), 'general');
-  assert.equal(validWorkflowMode('toString'), false); assert.equal(validWorkflowMode(null), false);
+  assert.throws(()=>library.select('toString',''),/未发布|停用/);assert.throws(()=>library.select(null,''),/无效/);
   const { exports: { workflowModes } } = harness('miniprogram/services/workflows.js');
   assert.deepEqual(Array.from(workflowModes, item => item.id).filter(id => id !== 'auto').sort(), Object.keys(workflows).sort());
+  } finally {store.close();}
 });
 
 test('手动选择后断网重试保留原方法，历史恢复选择，旧对话默认自动', async () => {

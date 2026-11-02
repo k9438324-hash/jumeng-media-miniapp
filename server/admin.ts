@@ -6,6 +6,7 @@ import { dirname, resolve } from 'node:path';
 import type { Config } from './config.js';
 import { Store, hash, HttpError } from './store.js';
 import { Content } from './content.js';
+import { SkillLibrary } from './skill-library.js';
 
   async function body(req:IncomingMessage) {
     const chunks:Buffer[]=[];let size=0;
@@ -16,6 +17,13 @@ import { Content } from './content.js';
 
 export async function managementRequest(config:Config,store:Store,content:Content,req:IncomingMessage,url:URL) {
   const path=url.pathname;
+      if(path==='/api/skills' && req.method==='GET')return {items:new SkillLibrary(store.db).list()};
+      if(path==='/api/skills' && req.method==='POST')return new SkillLibrary(store.db).save(await body(req));
+      const skillAction=/^\/api\/skills\/([a-z][a-z0-9-]{0,63})\/(publish|unpublish|restore)$/.exec(path);
+      if(skillAction && req.method==='POST'){
+        const data=await body(req),skills=new SkillLibrary(store.db);
+        return skillAction[2]==='restore'?skills.restore(skillAction[1],data.revision):skills.publish(skillAction[1],data.revision,skillAction[2]==='publish');
+      }
       if(path==='/api/courses' && req.method==='GET')return ({items:content.list()});
       if(path==='/api/courses' && req.method==='POST') {const data=await body(req);return (content.save(Number(data.id)||0,data));}
       const publish=/^\/api\/courses\/(\d+)\/(publish|unpublish)$/.exec(path);

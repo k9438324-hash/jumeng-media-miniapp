@@ -3,7 +3,7 @@ import { config } from '../../config';
 import { Context, Conversation, Job, WorkflowMode } from '../../domain';
 import { course, refreshCourse } from '../../services/course';
 import { Account, quotaView } from '../../services/account';
-import { workflowModes, workflowLabel } from '../../services/workflows';
+import { workflowModes, workflowLabel, publishedWorkflowModes } from '../../services/workflows';
 import { messageNodes, RichNode } from '../../services/message-format';
 const prefix = 'jumeng:chat:' + config.authMode + ':' + config.apiBase + ':';
 type RetryAction = 'init' | 'send' | 'poll' | 'history' | 'stop' | 'load';
@@ -77,6 +77,12 @@ Page({
     try {
       await refreshCourse().catch(()=>{});
       if(epoch!==this.epoch)return;
+      try {
+        const modes = await publishedWorkflowModes();
+        if(epoch!==this.epoch)return;
+        const selected = this.data.workflowModes[this.data.workflowIndex]?.id;
+        this.setData({workflowModes:modes,workflowIndex:Math.max(0,modes.findIndex(item=>item.id===selected)),examples:modes.filter(item=>item.id!=='auto'&&item.id!=='general').slice(0,4).map(item=>({label:item.label,desc:item.description||'选择后补充材料开始处理',text:item.starter||'请用“'+item.label+'”帮我处理：'}))});
+      } catch { /* 网络失败保留上次菜单，发送时服务端仍校验是否已停用。 */ }
       const pending = wx.getStorageSync('jumeng:pendingSop') as Context | undefined;
       let id = wx.getStorageSync(prefix + 'current') as string;
       if (pending) {
@@ -131,7 +137,7 @@ Page({
     const lesson = course.lessons.find(l => l.id === c.context?.lessonId);
     const category = lesson ? course.categories.find(cat => cat.lessonIds.includes(lesson.id)) : undefined;
     const switched = this.data.conversation?.id !== c.id;
-    this.setData({ conversation: c, messageNodes: c.messages.map(m => m.role === 'assistant' ? messageNodes(m.content) : []), workflowIndex: Math.max(0, workflowModes.findIndex(item => item.id === c.skillMode)), activeWorkflow: workflowLabel(c.activeSkill), messageSkills: c.messages.map(m => workflowLabel(m.skill)), messageMockFlags: c.messages.map(m => m.content.startsWith('【模拟结果')), contextLabel: lesson ? (category ? category.name : lesson.name) + ' · 第' + (c.context!.shotIndex + 1) + '镜 ' + lesson.shots[c.context!.shotIndex].title : '' });
+    this.setData({ conversation: c, messageNodes: c.messages.map(m => m.role === 'assistant' ? messageNodes(m.content) : []), workflowIndex: Math.max(0, this.data.workflowModes.findIndex(item => item.id === c.skillMode)), activeWorkflow: workflowLabel(c.activeSkill,this.data.workflowModes), messageSkills: c.messages.map(m => m.skillLabel || workflowLabel(m.skill,this.data.workflowModes)), messageMockFlags: c.messages.map(m => m.content.startsWith('【模拟结果')), contextLabel: lesson ? (category ? category.name : lesson.name) + ' · 第' + (c.context!.shotIndex + 1) + '镜 ' + lesson.shots[c.context!.shotIndex].title : '' });
     this.scrollToEnd(switched);
     wx.setStorageSync(prefix + 'current', id);
   },
@@ -177,7 +183,7 @@ Page({
   chooseWorkflow(e: WechatMiniprogram.CustomEvent<{ value: string }>) {
     if (this.data.busy || this.data.connecting) return;
     const index = Number(e.detail.value);
-    if (Number.isInteger(index) && workflowModes[index]) this.setData({ workflowIndex: index });
+    if (Number.isInteger(index) && this.data.workflowModes[index]) this.setData({ workflowIndex: index });
   },
   async retryMessage(e: WechatMiniprogram.TouchEvent) {
     // 重试某条 AI 回复：把对应的用户问题重新填入并发送（沿用 regenerate 语义，不改业务）。
@@ -190,15 +196,16 @@ Page({
     let userContent = '';
     for (let i = index - 1; i >= 0; i--) { if (msgs[i].role === 'user') { userContent = msgs[i].content; break; } }
     if (!userContent) return;
+    const originalMethod = this.data.workflowModes.findIndex(item => item.id === target.skill);
+    if (target.skill && originalMethod < 0) { wx.showToast({title:'此 Skill 已停用，请重新选择',icon:'none'}); return; }
     const conversationId = this.data.conversation?.id;
     if (!await this.confirmRegenerate() || this.data.busy || this.data.connecting || conversationId !== this.data.conversation?.id) return;
-    const originalMethod = workflowModes.findIndex(item => item.id === target.skill);
     this.setData({ input: userContent, canRegenerate: false, ...(originalMethod >= 0 ? { workflowIndex: originalMethod } : {}) });
     await this.send();
   },
   async send() {
     if (this.data.busy || this.data.connecting || !this.data.input.trim() || !this.data.conversation) return;
-    const pending: PendingSend = { conversationId: this.data.conversation.id, requestId: 'req-' + Date.now() + '-' + Math.random().toString(36).slice(2), content: this.data.input.trim(), skill: workflowModes[this.data.workflowIndex].id };
+    const pending: PendingSend = { conversationId: this.data.conversation.id, requestId: 'req-' + Date.now() + '-' + Math.random().toString(36).slice(2), content: this.data.input.trim(), skill: this.data.workflowModes[this.data.workflowIndex].id };
     wx.setStorageSync(prefix + 'pendingSend', pending);
     this.setData({ busy: true, error: '', partial: '', partialNodes: [], status: '正在提交…', followOutput: true, inputFocused: false });
     await this.submit(pending);
@@ -212,7 +219,7 @@ Page({
       this.jobId = job.id;
       wx.setStorageSync(prefix + 'job', { conversationId: pending.conversationId, id: job.id });
       wx.removeStorageSync(prefix + 'pendingSend');
-      this.setData({ input: '', error: '', busy: true, activeWorkflow: workflowLabel(job.skill) });
+      this.setData({ input: '', error: '', busy: true, activeWorkflow: job.skillLabel || workflowLabel(job.skill,this.data.workflowModes) });
       this.setData({ quota: null }); void this.refreshQuota();
       await this.loadConversation(pending.conversationId);
       await this.poll();
@@ -230,7 +237,7 @@ Page({
     try {
       const job = await api<Job>('/generations/' + requestedJob);
       if (requestedJob !== this.jobId || job.conversationId !== this.data.conversation?.id) return;
-      this.setData({ isMock: job.mode === 'mock', modeLabel: job.mode === 'mock' ? '模拟模式 · 未调用真实 AI' : 'DeepSeek · 文字辅助', canRegenerate: job.status === 'stopped', activeWorkflow: workflowLabel(job.skill) });
+      this.setData({ isMock: job.mode === 'mock', modeLabel: job.mode === 'mock' ? '模拟模式 · 未调用真实 AI' : 'DeepSeek · 文字辅助', canRegenerate: job.status === 'stopped', activeWorkflow: job.skillLabel || workflowLabel(job.skill,this.data.workflowModes) });
       this.setData({ partial: job.text, partialNodes: messageNodes(job.text), error: '', status: job.status === 'running' ? '正在生成…' : job.status === 'stopped' ? '已停止生成' : job.status === 'failed' ? '生成失败' : '已完成' });
       this.scrollToEnd();
       if (job.status === 'running') {

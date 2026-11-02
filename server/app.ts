@@ -7,9 +7,9 @@ import { generate, prompt, type Provider } from './provider.js';
 import { Content } from './content.js';
 import { randomBytes, timingSafeEqual } from 'node:crypto';
 import { managementRequest } from './admin.js';
-import { selectWorkflow, validWorkflowMode } from './workflows.js';
+import { SkillLibrary } from './skill-library.js';
 function publicConversation({ owner: _owner, ...c }: Conversation) { return c; }
-function publicJob({ owner: _owner, requestId: _requestId, ...j }: Job) { return j; }
+function publicJob({ owner: _owner, requestId: _requestId, skillSnapshot: _snapshot, ...j }: Job) { return j; }
 async function body(req: IncomingMessage): Promise<Record<string, unknown>> {
   let size = 0; const chunks: Buffer[] = [];
   for await (const chunk of req) { size += chunk.length; if (size > 16384) throw new HttpError(413, '请求过大'); chunks.push(chunk); }
@@ -26,6 +26,7 @@ function context(value: unknown, course: { lessons: { id:number; shots: unknown[
 export function createApplication(config: Config, provider: Provider = generate) {
   const store = new Store(config.dbPath);
   const content = new Content(store.db);
+  const skills = new SkillLibrary(store.db);
   const running = new Map<string, { controller: AbortController; promise: Promise<void> }>();
   const loginAttempts = new Map<string, { since: number; count: number }>();
   const teacherAttempts = new Map<string, { since: number; count: number }>();
@@ -39,7 +40,7 @@ export function createApplication(config: Config, provider: Provider = generate)
         const c = store.conversation(job.owner, job.conversationId);
         const lesson = c.context ? content.course().lessons.find(l=>l.id === c.context!.lessonId) : undefined;
         const reference = lesson ? { lesson, currentShot: c.context!.shotIndex } : undefined;
-        await provider(prompt(c, reference, job.skill), config, controller.signal, delta => {
+        await provider(prompt(c, reference, job.skill, job.skillSnapshot), config, controller.signal, delta => {
           if (controller.signal.aborted) return;
           job.text += delta;
           if (job.text.length > 30000) throw new Error('生成内容过长，请缩小问题范围');
@@ -54,7 +55,7 @@ export function createApplication(config: Config, provider: Provider = generate)
         clearTimeout(timeout);
         if ((job.status === 'completed' || job.status === 'stopped') && job.text) {
           const c = store.conversation(job.owner, job.conversationId);
-          c.messages.push({ role: 'assistant', content: job.text, ...(job.skill ? { skill: job.skill } : {}) }); store.save(c);
+          c.messages.push({ role: 'assistant', content: job.text, ...(job.skill ? { skill: job.skill,skillLabel:job.skillLabel,skillVersion:job.skillVersion } : {}) }); store.save(c);
         }
         store.saveJob(job); running.delete(job.id);
       }
@@ -148,6 +149,7 @@ export function createApplication(config: Config, provider: Provider = generate)
         return send(res,200,await managementRequest(config,store,content,req,url));
       }
       if (path === '/course' && req.method === 'GET') return send(res,200,content.course());
+      if (path === '/skills' && req.method === 'GET') return send(res,200,{items:skills.catalog()});
       if (path === '/account' && req.method === 'GET') return send(res, 200, store.account(owner,config.dailyLimit));
       if (path === '/conversations') {
         if (req.method === 'GET') return send(res, 200, { items: store.list(owner).map(c => ({ id: c.id, title: c.title, updatedAt: c.updatedAt, context: c.context })) });
@@ -171,10 +173,9 @@ export function createApplication(config: Config, provider: Provider = generate)
         // 重复请求使用原任务与方法，避免网络恢复后改变计次或执行内容。
         if (old) return send(res, 202, publicJob(old));
         const skillMode = data.skill === undefined ? 'auto' : data.skill;
-        if (!validWorkflowMode(skillMode)) throw new HttpError(400, '处理方式无效，请重新选择');
         const conversation = store.conversation(owner, generationMatch[1]);
-        const skill = skillMode === 'auto' ? selectWorkflow(data.content.trim(), conversation.activeSkill) : skillMode;
-        const job = store.begin(owner, generationMatch[1], data.requestId, data.content.trim(), config.aiMode, config.dailyLimit, skill, skillMode);
+        const selected = skills.select(skillMode, data.content.trim(), conversation.activeSkill);
+        const job = store.begin(owner, generationMatch[1], data.requestId, data.content.trim(), config.aiMode, config.dailyLimit, selected.id, String(skillMode), {label:selected.label,instruction:selected.instruction,version:selected.version});
         if (!old) void run(job);
         return send(res, 202, publicJob(job));
       }

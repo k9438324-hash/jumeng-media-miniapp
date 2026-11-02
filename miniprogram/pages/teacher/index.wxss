@@ -30,3 +30,5 @@
 .empty { padding:48rpx 0; }
 .success { margin-top:24rpx;padding:24rpx 0;border-top:1px solid var(--line);color:var(--ink-2);font-size:28rpx; }
 .notice { margin-top:24rpx; }
+.skill-help { margin:24rpx 0;line-height:1.7; }
+.field .skill-instruction { height:560rpx;min-height:560rpx;line-height:1.75;font-size:28rpx; }
