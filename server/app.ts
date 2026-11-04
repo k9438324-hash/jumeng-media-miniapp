@@ -194,6 +194,8 @@ export function createApplication(config: Config, provider: Provider = generate)
       throw new HttpError(404, '接口不存在');
     } catch (e) {
       if (res.headersSent) return res.destroy();
+      // 把非预期的 500 异常完整打印到 stdout，方便在云托管运行日志中定位根因。
+      if (!(e instanceof HttpError)) console.error(`[500] ${req.method} ${req.url}`, e instanceof Error ? (e.stack || e.message) : e);
       send(res, e instanceof HttpError ? e.status : 500, { error: e instanceof HttpError ? e.message : '服务暂时不可用，请重试' });
     }
   });
