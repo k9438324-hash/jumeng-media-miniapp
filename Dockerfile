@@ -10,7 +10,7 @@ RUN npm run build
 
 FROM node:24.16.0-bookworm-slim
 WORKDIR /app
-ENV NODE_ENV=production HOST=0.0.0.0 PORT=8787 DB_PATH=/app/data/jumeng.sqlite
+ENV NODE_ENV=production HOST=0.0.0.0 PORT=8787 DB_PATH=/app/data/jumeng.sqlite AUTH_MODE=wechat AI_MODE=deepseek
 COPY --from=build /app/dist ./dist
 COPY --from=build /app/miniprogram/data ./miniprogram/data
 COPY admin ./admin
