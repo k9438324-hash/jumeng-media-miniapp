@@ -1,5 +1,7 @@
 # 接手入口：聚梦传媒微信小程序
 
+> 009错误码已确认（2026-11-04）：云端/auth/login为TypeError > Error:DEPTH_ZERO_SELF_SIGNED_CERT。已调整Docker运行层安装ca-certificates，NODE_EXTRA_CA_CERTS指向云托管运行时注入的/app/cert/certificate.crt，并启用Node --use-system-ca。保持HTTPS及TLS验证，没有将AppSecret改走明文HTTP。证书路径依据云托管开放接口说明，官方WeixinCloud/wxcloudrun-express模板也安装证书组件；Node额外CA行为见官方CLI文档。未在本机构建Docker镜像，真实云端是否恢复仍待新版本部署后验收；如提示证书文件不存在，需核实平台是否注入该路径，不能直接忽略校验。
+
 > 云端登录故障（2026-11-04，覆盖下方旧部署状态）：用户截图确认express-q5mf-008已部署聚梦后台，8787端口一致；控制台云调用及公网/health均200，身份wechat、AI deepseek。客户端/auth/login返回500，云端日志为TypeError: fetch failed；目前只能确认微信换身份外部请求失败，证书/DNS/出网具体原因未知，不要判为AppSecret错误或已修复。新增error-details输出单行嵌套cause/并发连接错误码，不记录请求凭证，构建及13项服务端/诊断测试通过。待新版本部署后重试登录查看错误码。现有全量测试中部分客户端mock测试在wechat配置下失败，未宣称全量通过。视频上线及SQLite持久化仍待核验。
 
 > 仓库同步（2026-11-04）：已快进同步origin/main的f2d9cc6，移除AI页额度入口及每次发送计次提示，会员页额度与服务端计次规则保留。重新构建、38项测试及官方WXML/WXSS编译通过；官方CLI确认已登录，并成功打开正式项目。客户端仍为127.0.0.1/mock开发配置，本次未上传微信开发版、提审或发布；生产服务器与域名仍未配置。

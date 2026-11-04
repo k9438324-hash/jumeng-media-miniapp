@@ -107,3 +107,9 @@ DAILY_REQUEST_LIMIT=30
 ## AI 会员权限（2026-10-30 新增）
 
 生成任务还需要有效 AI 会员和剩余套餐次数；WECHAT_ALLOWED_OPENIDS 只代表账号准入，不再直接代表 AI 使用权限。旧数据库新增会员与流水表，不自动赋予权益。部署前先备份数据库，按 `docs/会员管理.md` 为原学员开通，再恢复对外服务。SOP 与对话历史不因会员到期关闭。管理命令复用 DB_PATH；不会调用付费 API。
+# 微信云托管 HTTPS 证书（2026-11-04）
+
+009版本登录出现DEPTH_ZERO_SELF_SIGNED_CERT。Docker运行层补充ca-certificates，Node启动启用--use-system-ca，并以NODE_EXTRA_CA_CERTS=/app/cert/certificate.crt加载云托管运行时提供的证书。此文件不从源码或用户聊天取得，不设置NODE_TLS_REJECT_UNAUTHORIZED=0。普通服务器部署若无此证书，应移除该环境变量（Node会报告缺文件警告，仍保留默认验证）。
+
+依据：[官方Express模板](https://github.com/WeixinCloud/wxcloudrun-express/blob/main/Dockerfile)、[Node官方CA配置](https://nodejs.org/api/cli.html#node_extra_ca_certsfile)。本机没有Docker，未验证镜像构建或云端登录恢复，等待自动部署后观察日志并重新登录；此变更不解决媒体上传、数据库持久化或类目审核。
+
