@@ -170,24 +170,27 @@ test('真实模式配置失败应明确报错，不静默模拟',()=>{
   assert.throws(()=>loadConfig({AUTH_MODE:'wechat'}),/许可名单/);
   assert.throws(()=>loadConfig({NODE_ENV:'production'}),/生产环境/);
 });
-test('微信身份协议模拟：忽略客户端身份、校验许可名单及过期token；不代表真实微信登录',async t=>{
-  const config={...loadConfig({}),authMode:'wechat',allowedOpenids:['allowed-student'],appId:'test-app',appSecret:'not-a-real-secret'};
+test('微信身份协议模拟：默认放行新学员、students 黑名单可拉黑、过期token；不代表真实微信登录',async t=>{
+  const config={...loadConfig({}),authMode:'wechat',allowedOpenids:[],appId:'test-app',appSecret:'not-a-real-secret'};
   const f=await fixture(t,config);
-  const original=globalThis.fetch;let returnedOpenid='not-allowed';
+  const original=globalThis.fetch;let returnedOpenid='new-student';
   globalThis.fetch=async (url,options)=>{
     if(String(url).startsWith('https://api.weixin.qq.com/'))return new Response(JSON.stringify({openid:returnedOpenid}));
     return original(url,options);
   };
   try{
-    const rejected=await f.request('/auth/login','POST',{code:'wx-code',openid:'allowed-student'});
-    assert.equal(rejected.status,403);assert.equal('token' in rejected.data,false);
-    returnedOpenid='allowed-student';
-    const accepted=await f.request('/auth/login','POST',{code:'wx-code'});assert.equal(accepted.status,200);
+    // 默认放行：不在任何白名单的新学员也能登录
+    const accepted=await f.request('/auth/login','POST',{code:'wx-code'});
+    assert.equal(accepted.status,200);assert.equal('token' in accepted.data,true);
     const token=accepted.data.token;
     assert.equal((await f.request('/conversations','GET',undefined,token)).status,200);
-    f.config.allowedOpenids=[];
+    // 将学员拉黑（enabled=0）后，旧 token 也不能继续访问
+    const owner=f.app.store.owner(token);
+    f.app.store.db.prepare('INSERT INTO students VALUES (?,?,0) ON CONFLICT(owner) DO UPDATE SET enabled=0').run(owner,'拉黑学员');
     assert.equal((await f.request('/conversations','GET',undefined,token)).status,403);
-    f.config.allowedOpenids=['allowed-student'];
+    // 解除拉黑后恢复
+    f.app.store.db.prepare('UPDATE students SET enabled=1 WHERE owner=?').run(owner);
+    assert.equal((await f.request('/conversations','GET',undefined,token)).status,200);
     f.app.store.db.prepare('UPDATE sessions SET expires=0').run();
     assert.equal((await f.request('/conversations','GET',undefined,token)).status,401);
   }finally{globalThis.fetch=original;}
@@ -211,7 +214,7 @@ test('DeepSeek协议模拟：分块UTF8解析与上游失败；不是实际API�
 
 test('会员期限、套餐扣额、幂等、过期历史和账户隔离',async t=>{
   let calls=0;
-  const f=await fixture(t,{},async (_m,_c,_s,onText)=>{calls++;onText('可用方案');});
+  const f=await fixture(t,{trialQuota:0},async (_m,_c,_s,onText)=>{calls++;onText('可用方案');});
   const login=await f.request('/auth/login','POST',{deviceId:'member-student'}), token=login.data.token;
   const owner=f.app.store.owner(token), other=await f.login('member-other');
   assert.equal((await f.request('/account')).status,401);

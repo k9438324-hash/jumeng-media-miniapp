@@ -71,8 +71,21 @@ export class Store {
     return row ? JSON.parse(row.data as string) : null;
   }
   allowed(owner:string, configured:string[]) {
+    // 默认放行：新学员可直接使用试用额度；仅当 students 表明确 enabled=0 时才拉黑。
     const student=this.db.prepare('SELECT enabled FROM students WHERE owner=?').get(owner);
-    return student ? !!student.enabled : configured.some(id=>'wx:'+hash(id)===owner);
+    if (student) return !!student.enabled;
+    return true;
+  }
+  // 学员首次使用时自动发放试用额度（默认 100 次）。已有会员或已发过试用则跳过。
+  ensureTrial(owner: string, trialQuota: number, label = '试用额度') {
+    if (!Number.isSafeInteger(trialQuota) || trialQuota < 0) throw new Error('试用额度无效');
+    const existing = this.membership(owner);
+    if (existing) return existing; // 已开通会员或已发过试用，不再重复发放
+    const now = Date.now();
+    const next: Membership = { label, startsAt: now, expiresAt: now + 3650 * 86400000, quota: trialQuota, used: 0 };
+    this.db.prepare('INSERT INTO memberships VALUES (?,?) ON CONFLICT(owner) DO UPDATE SET data=excluded.data').run(owner, JSON.stringify(next));
+    this.db.prepare('INSERT INTO membership_grants(owner,at,days,quota,label) VALUES (?,?,?,?,?)').run(owner, now, 0, trialQuota, label);
+    return next;
   }
   grant(owner: string, days: number, quota: number, label: string) {
     if (!owner || !Number.isSafeInteger(days) || days < 0 || days > 3650 || !Number.isSafeInteger(quota) || quota < 0 || quota > 1000000 || days+quota===0 || !label.trim() || label.length > 60) throw new Error('开通参数无效');
@@ -109,9 +122,9 @@ export class Store {
     this.db.exec('BEGIN IMMEDIATE');
     try {
       const membership = this.membership(owner);
-      if (!membership) throw new HttpError(403, '尚未开通 AI 会员，请联系老师开通');
-      if (membership.expiresAt <= Date.now()) throw new HttpError(403, 'AI 会员已到期，请联系老师续期');
-      if (membership.used >= membership.quota) throw new HttpError(429, 'AI 套餐额度已用完，请联系老师补充额度');
+      if (!membership) throw new HttpError(403, '尚未开通使用权限，请联系老师开通');
+      if (membership.expiresAt <= Date.now()) throw new HttpError(403, '使用期限已到，请联系老师续期');
+      if (membership.used >= membership.quota) throw new HttpError(429, '试用额度已用完，请联系老师开通正式权限');
       const count = Number(this.db.prepare('SELECT count FROM usage WHERE owner=? AND day=?').get(owner, dayKey())?.count || 0);
       if (count >= limit) throw new HttpError(429, '今日调用额度已用完，请明天再试');
       this.db.prepare('INSERT INTO usage VALUES (?,?,1) ON CONFLICT(owner,day) DO UPDATE SET count=count+1').run(owner, dayKey());

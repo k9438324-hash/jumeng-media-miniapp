@@ -116,6 +116,8 @@ export function createApplication(config: Config, provider: Provider = generate)
           owner = 'wx:' + hash(identity.openid);
           if (!store.allowed(owner,config.allowedOpenids)) throw new HttpError(403, '此微信账号未开通使用权限');
         }
+        // 首次登录自动发放试用额度（默认 100 次）；已开通会员则跳过。
+        if (config.trialQuota > 0) store.ensureTrial(owner, config.trialQuota);
         return send(res, 200, { ...store.session(owner), authMode: config.authMode, aiMode: config.aiMode });
       }
       const token = (req.headers.authorization || '').replace(/^Bearer /, '');

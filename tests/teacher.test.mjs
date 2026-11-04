@@ -9,7 +9,7 @@ import {hash} from '../dist/server/store.js';
 
 test('小程序老师后台：密码、会话绑定、真实管理、退出、过期与错误次数限制',async t=>{
  const dir=mkdtempSync(resolve(tmpdir(),'jumeng-teacher-'));
- const app=createApplication({...loadConfig({}),teacherPasswordHash:hash('test-teacher-pass'),dbPath:resolve(dir,'db.sqlite'),port:0},async()=>{throw Error('测试不应调用模型');});
+ const app=createApplication({...loadConfig({}),teacherPasswordHash:hash('test-teacher-pass'),dbPath:resolve(dir,'db.sqlite'),port:0,trialQuota:0},async()=>{throw Error('测试不应调用模型');});
  await new Promise(r=>app.server.listen(0,'127.0.0.1',r));
  t.after(async()=>{await app.shutdown();rmSync(dir,{recursive:true,force:true});});
  const base='http://127.0.0.1:'+app.server.address().port;

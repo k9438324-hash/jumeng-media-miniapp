@@ -4,6 +4,7 @@ export interface Config {
   appId: string; appSecret: string; allowedOpenids: string[];
   deepseekKey: string; deepseekBase: string; deepseekModel: string;
   dailyLimit: number; dbPath: string; mediaRoot: string; mockDelay: number;
+  trialQuota: number;
   upstreamTimeout: number;
   teacherPasswordHash?: string;
 }
@@ -19,11 +20,13 @@ export function loadConfig(env = process.env): Config {
   const deepseekBase = (env.DEEPSEEK_BASE_URL || 'https://api.deepseek.com').replace(/\/$/, '');
   if (!deepseekBase.startsWith('https://')) throw new Error('DeepSeek 地址必须为 HTTPS');
   const dailyLimit = Number(env.DAILY_REQUEST_LIMIT || 30);
+  const trialQuota = Number(env.TRIAL_QUOTA || 100);
   const port = Number(env.PORT || 8787);
   if (!Number.isInteger(dailyLimit) || dailyLimit < 1 || !Number.isInteger(port) || port < 0 || port > 65535) throw new Error('额度或端口无效');
+  if (!Number.isInteger(trialQuota) || trialQuota < 0) throw new Error('试用额度无效');
   return { host, port, authMode: authMode as Config['authMode'], aiMode: aiMode as Config['aiMode'],
     appId: env.WECHAT_APP_ID || '', appSecret: env.WECHAT_APP_SECRET || '', allowedOpenids,
     deepseekKey: env.DEEPSEEK_API_KEY || '', deepseekBase, deepseekModel: env.DEEPSEEK_MODEL || 'deepseek-flash',
     dailyLimit, dbPath: resolve(env.DB_PATH || 'server/data/jumeng.sqlite'), mediaRoot: env.MEDIA_ROOT ? resolve(env.MEDIA_ROOT) : '',
-    mockDelay: 100, upstreamTimeout: 90000, teacherPasswordHash: env.TEACHER_PASSWORD_HASH || '' };
+    trialQuota, mockDelay: 100, upstreamTimeout: 90000, teacherPasswordHash: env.TEACHER_PASSWORD_HASH || '' };
 }

@@ -10,7 +10,7 @@ import { Content } from '../dist/server/content.js';
 
 test('本机管理台：认证、跨站拦截、草稿发布隔离、上传、学员管理与实时同步',async t=>{
   const dir=mkdtempSync(resolve(tmpdir(),'jumeng-admin-'));
-  const config={...loadConfig({}),dbPath:resolve(dir,'db.sqlite'),port:0};
+  const config={...loadConfig({}),dbPath:resolve(dir,'db.sqlite'),port:0,trialQuota:0};
   const admin=createAdmin(config,'test-admin-key');
   const app=createApplication(config,async(_m,_c,_s,onText)=>onText('完成'));
   await new Promise(r=>admin.server.listen(0,'127.0.0.1',r));
